@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Verified answers from your documentation — with proof."
 readme = "README.md"
 license = {text = "Apache-2.0"}
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.30.0",
@@ -35,3 +35,6 @@ docverify-api = "docverify.server:app"
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["docverify*"]

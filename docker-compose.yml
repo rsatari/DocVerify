@@ -13,7 +13,7 @@ services:
       - ./config:/app/config                 # pipeline_config.yaml
       - ./evaluation:/app/evaluation         # evaluation_spec.yaml
     depends_on:
-      - db
+      - postgres
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -22,7 +22,7 @@ services:
       retries: 3
 
   # ─── PostgreSQL (persistent state) ──────────────────
-  db:
+  postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: docverify
@@ -51,7 +51,7 @@ services:
   #     - "8001:8000"
   #   env_file: .env
   #   depends_on:
-  #     - db
+  #     - postgres
   #     - redis
   #   environment:
   #     - DATABASE_URL=postgresql://docverify:${DB_PASSWORD:-docverify_dev_2024}@db:5432/docverify

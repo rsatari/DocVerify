@@ -1,9 +1,8 @@
 {
-  "$schema": "https://langgra.ph/schema.json",
+  "name": "docverify",
   "dependencies": ["."],
   "graphs": {
     "agent": "./docverify/agent.py:graph",
     "pipeline": "./docverify/graph.py:build_graph"
-  },
-  "env": ".env"
+  }
 }
