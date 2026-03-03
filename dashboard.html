@@ -306,14 +306,22 @@ function App(){
     const msg=input.trim();setInput("");setRunning(true);setError(null);setEvalResults(null);
     setMessages(prev=>[...prev,{type:"human",content:msg}]);
     try{
-      const r=await fetch(`${API}/threads/${tid}/runs/wait`,{method:"POST",headers:{"Content-Type":"application/json"},
+      const cr=await fetch(`${API}/threads/${tid}/runs`,{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({assistant_id:assistantId,input:{messages:[{type:"human",content:msg}]}})});
-      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||e.message||`HTTP ${r.status}`)}
-      const result=await r.json();const allMsgs=result.values?.messages||result.messages||[];setMessages(allMsgs);
-      // Parse eval results from response
-      for(const m of allMsgs){if(m.type!=="human"){const d=parseEvaluation(m.content);if(d){setEvalResults(d);break}}}
+      if(!cr.ok){const e=await cr.json().catch(()=>({}));throw new Error(e.detail||e.message||`HTTP ${cr.status}`)}
+      const run=await cr.json();const runId=run.run_id;
+      let rs="running";let att=0;
+      while(rs==="running"||rs==="pending"){
+        await new Promise(r=>setTimeout(r,5000));att++;
+        try{const sr=await fetch(`${API}/threads/${tid}/runs/${runId}`);
+          if(sr.ok){const sd=await sr.json();rs=sd.status||"running";
+          if(att%6===0){setMessages(prev=>{const fl=prev.filter(m=>!m._progress);return[...fl,{type:"ai",content:"Pipeline running... ("+Math.floor(att*5/60)+"m "+(att*5)%60+"s)",_progress:true}]})}
+        }}catch{}}
+      const fr=await fetch(`${API}/threads/${tid}`,{headers:{"Content-Type":"application/json"}});
+      if(fr.ok){const td=await fr.json();const allMsgs=td.values?.messages||[];setMessages(allMsgs);
+        for(const m of allMsgs){if(m.type!=="human"){const d=parseEvaluation(m.content);if(d){setEvalResults(d);break}}}}
       await loadThreads();
-    }catch(e){setError(e.message);setMessages(prev=>[...prev,{type:"ai",content:`Error: ${e.message}`}])}
+      }catch(e){setError(e.message);setMessages(prev=>[...prev,{type:"ai",content:`Error: ${e.message}`}])}
     setRunning(false);
   };
 

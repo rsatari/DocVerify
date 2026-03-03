@@ -1,130 +1,2819 @@
 {
-  "_type": "evaluation_result",
-  "elapsed": 466.72764897346497,
-  "report_path": "reports/latest_report.md",
   "questions": {
     "Q1": {
-      "question_text": "Why does the highly peer-to-peer design of the DDC clusters ensure resilience? And why is it suitable for a fully autonomous edge or hybrid cluster for an enterprise?",
-      "loop": "A",
-      "route_reason": "Question Q1 asks about DDC in isolation \u2014 no external comparison needed.",
-      "answer_markdown": "# Why DDC's Peer-to-Peer Design Ensures Resilience, and Why It Suits Autonomous Edge/Hybrid Enterprise Clusters\n\n## Direct Answer\n\nDDC clusters achieve resilience through a peer-to-peer architecture where each node is an isolated, self-coordinating participant that can discover peers via DHT, automatically route around failures, and trigger data repair when nodes leave. This design suits autonomous edge or hybrid enterprise clusters because each DDC cluster operates as a \"complete, independent cloud\" that can function even when blockchain connectivity is unavailable, with cluster topology and customer data persisted locally on disk.\n\n## Detailed Explanation\n\n### P2P Architecture and Node Independence\n\nDDC Core is described as \"an isolated piece of software that enables individual nodes to join a cluster and collaborate.\" [[chunk:p1-0054]] Each DDC CDN Node and Storage Node is likewise \"an isolated piece of software that can join to the network with other nodes.\" [[chunk:p2-0055]] This isolation means no single node is a centralized point of failure \u2014 each node is a self-sufficient participant in the cluster.\n\nNodes discover each other using a DHT (Distributed Hash Table) implementation with a replication factor (k) = 5, key space length (L) = 256, and concurrency (\u03b1) = 3. On startup, nodes get a list of peers from the smart contract, find a live node with a different public key, and use it as a DHT bootstrap node. If no other nodes are found, the node uses itself as a bootstrap node. [[chunk:p10-0060]] This peer-discovery mechanism ensures that the network topology is maintained in a fully decentralized manner without relying on a central registry at runtime.\n\n### Automatic Failure Routing and Data Repair\n\nWhen a node is removed from the cluster, the system exhibits several resilience behaviors: the removed node can no longer connect to other nodes (via p2p authentication), it stops receiving requests, and a repair process is triggered on the remaining nodes. The simulation documented that after node removal, \"Data repair process started. Data size grew on other nodes.\" [[chunk:p19-0064]] This demonstrates that the p2p design enables automatic redistribution of data responsibilities without manual intervention.\n\nAt the data level, DDC distributes data across multiple nodes using two strategies: \"Small pieces: Replication (multiple copies)\" and \"Pieces larger than 16 KB: Erasure coding.\" In the event of node failures, \"Temporary outage: System routes around failures automatically\" and \"Permanent loss: Data survives if enough copies/shares remain.\" [[chunk:p2-0022]] The storage protocol \"guarantees the required level of durability (e.g. 99.99999%) and tolerates node shutdowns (both expected and unexpected) or any misbehaviour,\" and \"Client data is always available even when a node (or multiple nodes) leave a network.\" [[chunk:p35-0070]]\n\nErasure coding further spreads risk: for example, a (K=20, N=40) erasure code achieves better durability than a (K=10, N=20) code at the same 2x expansion factor \"because the risk is spread across more nodes.\" [[chunk:p2-0038]]\n\n### Suitability for Autonomous Edge and Hybrid Clusters\n\nEach DDC cluster is described as \"a complete, independent cloud. It replaces traditional infrastructure like VPC, S3, and compute services in one decentralized system with built-in on-chain verification.\" [[chunk:p2-0022]] This independence is what makes DDC suitable for edge deployments \u2014 each cluster is self-contained rather than dependent on a central control plane.\n\nA critical enhancement for autonomous operation is the blockchain integration improvement: storage and cache nodes persist the nodes index to disk, \"So that even in case blockchain is unavailable, they can be restarted and function without any errors.\" Similarly, the authentication gater uses \"bucket and customer indexes persisted on disk. So that even in case blockchain is unavailable, and customer information isn't in cache (or nodes were restarted), the node is able to authenticate the client so the storage and cache can handle clients requests and service availability from client perspective is increased.\" [[chunk:p32-0069]] This means a DDC cluster can operate autonomously even when disconnected from the blockchain.\n\nDDC clusters can also be \"optimized for specific data types and regions.\" One cluster might focus on \"large binary objects for video streaming in Central Asia, bypassing app stores or geo-restrictions,\" while another might serve \"rapid transactional data services via a concentrated network of low-latency nodes in New Zealand.\" [[chunk:p4-0023]] Clusters also support configurable SLAs \u2014 smaller clusters (e.g., 5 nodes) can be created with custom redundancy parameters (replication factor, erasure coding total/required) set on-chain. [[chunk:p30-0068]]\n\nThe design provides enterprise-grade security for untrusted environments: \"Internal communication is protected against malicious activity. Each operation is authorized... Data transferred internally is authenticated by hashes.\" Malicious node providers \"can't increase their income in a dishonest way (e.g. generate invalid activity report) or hurt the cluster (pollute the network, corrupt data etc.).\" [[chunk:p32-0069]] The protocol can detect lost or unstored data, \"report (it's up to DAC to slash or not the node after its own checks) and repair data in case it's needed.\" [[chunk:p35-0070]]\n\nFor enterprise data sovereignty, DDC uses client-side encryption where \"By encrypting data before upload, you maintain complete control over your encryption keys, ensuring that only you can decrypt your data. Even node operators cannot access the plaintext content.\" [[chunk:p4-0023]] The system also ensures \"a clean separation of cloud infrastructure & operations from the protocol. This unique separation allows specialized data to reside on the edge, while also ensuring seamless integration and interoperability through the Cere L1 Blockchain and smart contracts.\" [[chunk:p4-0023]]\n\n### Contrast with Traditional Cloud\n\nWhere \"traditional cloud stacks require you to trust the provider's infrastructure and logs, DDC shifts that trust that you can verify, rather than assume.\" Instead of \"stitching together S3 + CloudFront + Lambda + custom metering, you get a unified stack where every operation is auditable and verified on-chain.\" [[chunk:p2-0022]]\n\n## Planned/Roadmap Items\n\n- As a planned capability, SDK-integrated key management with delegated access grants is in development. [[chunk:p4-0023]]\n- Compute nodes must generate logs and metrics detailing resources consumed by AI agents, with cost metrics clearly defined for charging \u2014 targeted for August 2025. [[chunk:p2-0022]]\n\n## What the Documents Do NOT Cover\n\n- The documents do not provide a formal definition or detailed technical explanation of what makes the DDC architecture \"highly peer-to-peer\" beyond DHT-based discovery and p2p authentication.\n- There is no explicit discussion of hybrid cluster topologies (mixing edge and cloud nodes) or specific hybrid deployment patterns.\n- Key loss scenarios for client-side encryption are not addressed in the provided evidence.\n- The documents do not detail specific consensus mechanisms between peer nodes or how consistency is maintained across the p2p network beyond erasure coding and repair.\n\n## DOC_GAPS \u2014 Documentation Improvement Recommendations\n\n- **GAP:** No dedicated document explaining the P2P architecture's resilience properties in a consolidated manner.\n - **IMPLICATION:** The evidence implies resilience through DHT discovery, automatic repair, and routing around failures, but these are spread across delivery plans and simulation reports rather than stated as architectural principles.\n - **RECOMMENDATION:** Add an architecture overview document titled \"DDC P2P Resilience Architecture\" that consolidates how DHT, erasure coding, repair mechanisms, and local blockchain indexing combine to ensure resilience.\n\n- **GAP:** No documentation on hybrid cluster deployment scenarios (edge + cloud mixed topology).\n - **IMPLICATION:** The docs describe edge-native capabilities and cluster independence, implying hybrid is possible, but never describe a hybrid deployment pattern.\n - **RECOMMENDATION:** Add a section to the DDC deployment guide covering hybrid cluster configurations and their enterprise use cases.\n\n- **GAP:** No documentation on key loss scenarios for client-side encryption.\n - **IMPLICATION:** Client-side encryption is recommended for sensitive data, but consequences of losing encryption keys are not addressed.\n - **RECOMMENDATION:** Add a key management and recovery section to the security documentation.\n\n- **GAP:** Missing explicit documentation on how P2P authentication works between nodes.\n - **IMPLICATION:** The simulation report mentions \"p2p authentication\" preventing removed nodes from connecting, but the mechanism is not explained.\n - **RECOMMENDATION:** Add technical specification for inter-node P2P authentication in the Security & Reliability section.\n\n## Citations Summary\n\n- [[chunk:p1-0054]] \u2014 DDC Core description, node isolation and collaboration\n- [[chunk:p2-0055]] \u2014 CDN node isolation, Storage Node blockchain connection\n- [[chunk:p10-0060]] \u2014 DHT setup, node discovery mechanism, configuration\n- [[chunk:p19-0064]] \u2014 Node leaving cluster simulation, repair behavior\n- [[chunk:p2-0022]] \u2014 DDC overview, data durability strategies, failure routing\n- [[chunk:p2-0038]] \u2014 Erasure coding durability comparison\n- [[chunk:p4-0023]] \u2014 Data security, client-side encryption, cluster optimization, DDC components\n- [[chunk:p30-0068]] \u2014 Configurable cluster SLAs, smaller clusters\n- [[chunk:p32-0069]] \u2014 Blockchain indexing for autonomous operation, authentication persistence, untrusted node acceptance\n- [[chunk:p35-0070]] \u2014 Durability guarantees, data availability, proof of storage",
-      "cited_chunks": [
-        "p35-0070",
-        "p32-0069",
-        "p2-0038",
-        "p1-0054",
-        "p30-0068",
-        "p2-0055",
-        "p19-0064",
-        "p4-0023",
-        "p2-0022",
-        "p10-0060"
-      ],
-      "evidence_chunks_provided": 12,
-      "evidence_chunks_cited": 10,
-      "outside_knowledge_flags": [],
-      "overall_score": 0.8476,
+      "question_id": "Q1",
       "passed": true,
+      "overall_score": 0.7821,
       "scores": {
-        "grounded_correctness": 0.8691,
-        "completeness": 0.95,
+        "grounded_correctness": 0.7832,
+        "completeness": 0.8938,
         "precision": 0.7,
-        "clarity": 0.88,
-        "citation_quality": 0.78
+        "clarity": 0.8,
+        "citation_quality": 0.7
       },
       "verification": {
-        "grounding": {},
-        "nli": {},
-        "ragas": {},
-        "claims_total": 0,
-        "claims_supported": 0,
-        "claims_failed": 0,
-        "overrides": 0,
-        "claim_details": []
-      }
+        "total_claims": 60,
+        "passed_claims": 58,
+        "failed_claims": 2,
+        "flagged_claims": 0,
+        "cache_hits": 6,
+        "claims": [
+          {
+            "text": "DDC clusters distribute data across multiple nodes so that no single node holds a complete copy of any given file",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The failure or removal of an individual node does not interrupt access to stored data in DDC clusters",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "An edge cluster is capable of independently executing storage functions without requiring live connectivity to the blockchain or any external coordination service",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "independently",
+                "connectivity",
+                "coordination"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "An edge cluster is capable of independently executing routing functions without requiring live connectivity to the blockchain or any external coordination service",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "independently",
+                "connectivity",
+                "coordination"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "An edge cluster is capable of independently executing compute functions without requiring live connectivity to the blockchain or any external coordination service",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "independently",
+                "connectivity",
+                "coordination"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "An edge cluster is capable of independently executing request-level authentication functions without requiring live connectivity to the blockchain or any external coordination service",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "authentication",
+                "independently",
+                "connectivity"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC clusters operate without a single point of failure by design",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "When data is ingested in DDC, the system fragments it and distributes portions across individual storage nodes within the cluster",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Data retrieval in DDC is coordinated across multiple participating nodes rather than routed through any one critical path",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "No single node represents a critical path in DDC, allowing the cluster to continue serving requests as long as a sufficient set of participating nodes remains reachable within the network",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC distributes stored data across cluster nodes by splitting files into fragments",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Each DDC node retains only a portion of the complete dataset",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC fragmentation is implemented through erasure coding",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "erasure coding",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Erasure coding is a fault-tolerance mechanism that enables data reconstruction even when a subset of nodes becomes unavailable",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Erasure coding"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The Dragon 1 cluster uses a 16/48 erasure coding scheme",
+            "status": "supported",
+            "cited_file": "Data Redundancy Strategy.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "16/48",
+                "erasure coding",
+                "Dragon 1",
+                "The Dragon"
+              ],
+              "missing_terms": [],
+              "detail": "Found 4/4 key terms on cited page."
+            }
+          },
+          {
+            "text": "Any 16 of the 48 chunks are sufficient to reconstruct the original data in the Dragon 1 cluster",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 5,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Dragon 1"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The Dragon 1 cluster tolerates the simultaneous loss of up to 32 storage nodes without data loss",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 5,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Dragon 1",
+                "The Dragon"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC clusters maintain continuous request routing even when individual nodes become unavailable",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "As storage nodes go offline, the DDC cluster automatically redirects client requests to remaining active nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "When a storage or compute node becomes unavailable, the DDC Orchestrator detects the failure and initiates workload redistribution across the remaining healthy nodes in the cluster",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Workload redistribution in DDC is governed by assignment logic configured within the Orchestrator",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DDC Orchestrator continuously monitors node state and reallocates tasks without requiring manual intervention",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC clusters operate without a centralized coordinator",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC relies on distributed protocols for all routing decisions",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC relies on distributed protocols for all data placement decisions",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC relies on distributed protocols for all replication decisions",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC adopts the Kademlia DHT protocol to manage network topology",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DHT",
+                "Kademlia",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Kademlia DHT replaced an earlier custom Hash Ring-based solution in DDC",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DHT",
+                "Kademlia",
+                "Hash Ring",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 4/4 key terms on cited page."
+            }
+          },
+          {
+            "text": "Kademlia DHT enables each node to independently resolve routing paths",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DHT",
+                "Kademlia"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Kademlia DHT enables each node to maintain balanced data distribution across the cluster",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DHT",
+                "Kademlia"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Data plane operations in DDC remain available even when control plane connectivity is interrupted",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Data plane operations in DDC remain available even when blockchain connectivity is interrupted",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC storage nodes are designed to continue serving requests even when the blockchain is temporarily unavailable",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC cache nodes are designed to continue serving requests even when the blockchain is temporarily unavailable",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Storage nodes maintain bucket information locally, enabling continued operation during periods of blockchain unavailability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Cache nodes maintain bucket information locally, enabling continued operation during periods of blockchain unavailability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Storage nodes maintain customer information locally, enabling continued operation during periods of blockchain unavailability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "unavailability",
+                "information",
+                "blockchain"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Cache nodes maintain customer information locally, enabling continued operation during periods of blockchain unavailability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "unavailability",
+                "information",
+                "blockchain"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Storage nodes maintain a nodes index that is persisted on disk",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 34,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "persisted",
+                "maintain",
+                "Storage"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Cache nodes maintain a nodes index that is persisted on disk",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 34,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "persisted",
+                "maintain",
+                "Cache"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "If DDC nodes are restarted when the blockchain is temporarily unavailable, they can resume authenticating clients without errors",
+            "status": "failed",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 34,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "If DDC nodes are restarted when the blockchain is temporarily unavailable, they can resume serving requests without errors",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 34,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC nodes draw on the locally persisted index rather than requiring a live blockchain connection when restarted during blockchain unavailability",
+            "status": "failed",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 34,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The blockchain functions as an immutable repository for validation results in DDC",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The blockchain functions as an immutable repository for cluster configuration in DDC",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Authorization state is enforced at the node level in DDC",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Bucket permissions are enforced at the node level in DDC",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Bucket",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Storage operations in DDC can proceed without requiring a live blockchain connection for every request",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Compute operations in DDC can proceed without requiring a live blockchain connection for every request",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC nodes authenticate incoming requests by verifying cryptographic signatures tied to the requesting identity",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DDC SDK derives a signing key from the user's seed phrase locally",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "seed phrase",
+                "DDC",
+                "SDK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DDC SDK derives a signing key from the user's wallet locally",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC",
+                "SDK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DDC SDK uses the signing key to sign storage requests before they are transmitted to DDC nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC",
+                "SDK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DDC SDK uses the signing key to sign compute requests before they are transmitted to DDC nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC",
+                "SDK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC nodes verify the cryptographic signature against the declared identity without ever having access to the underlying seed material",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The distributed storage layer in DDC maintains availability independently of blockchain connectivity during transient outages",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The distributed storage layer in DDC maintains Byzantine fault tolerance independently of blockchain connectivity during transient outages",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Edge cluster configurations target 99.9% or higher availability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "99.9%"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Hybrid cluster configurations target 99.9% or higher availability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "99.9%"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Workloads in DDC are automatically redistributed when a node becomes unreachable",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          }
+        ]
+      },
+      "ragas_faithfulness": 0.7419,
+      "dual_eval": true,
+      "verification_floor_applied": false,
+      "score_blend_applied": false
     },
     "Q2": {
-      "question_text": "How can a DDC cluster provide a higher level of security compared to a typical stack from Databricks or Snowflake running on top of AWS/Azure?",
-      "loop": "A",
-      "route_reason": "The internal docs already contrast DDC against 'traditional cloud stacks' and 'centralized cloud' with mechanisms like client-side encryption, erasure coding, DAC verification, and multi-provider distribution\u2014Databricks and Snowflake on AWS/Azure ARE traditional cloud stacks, so the existing category-level comparison suffices without needing platform-specific internals.",
-      "answer_markdown": "# How a DDC Cluster Provides Higher Security Compared to a Typical Databricks/Snowflake Stack on AWS/Azure\n\n## Direct Answer\n\nA DDC cluster replaces the trust model of traditional cloud stacks\u2014where you must trust the provider's infrastructure and logs\u2014with a system where every operation is auditable and verified on-chain. Security advantages stem from on-chain verification of all operations, erasure-coded data distribution across multiple independent nodes (making data reconstruction by a malicious actor require control over a significant portion of the cluster), client-side encryption where even node operators cannot access plaintext content, and a built-in trust layer (DAC) that captures real-time traffic and compute metrics for blockchain-level inspection. [[chunk:p2-0022]] [[chunk:p4-0023]]\n\n## Detailed Explanation\n\n### Trust Model: Verify Rather Than Assume\n\nThe documents explicitly contrast DDC with traditional cloud stacks: \"Where traditional cloud stacks require you to trust the provider's infrastructure and logs, DDC shifts that trust that you can verify, rather than assume.\" [[chunk:p2-0022]] In a typical Databricks or Snowflake deployment on AWS/Azure, the customer relies on the cloud provider's own logging and internal controls. DDC instead provides built-in on-chain verification\u2014every operation is \"auditable and verified on-chain.\" [[chunk:p2-0022]] This means that data operations are not solely attested by the service operator but are cryptographically recorded on a blockchain, creating an independently verifiable audit trail.\n\n### Data Distribution via Erasure Coding\n\nDDC uses erasure coding to distribute data across multiple nodes in a cluster. \"Data is split into fragments, with each node storing only a portion of your files. For a malicious actor to reconstruction a file, they require control over a significant portion of the cluster.\" [[chunk:p4-0023]] [[chunk:p2-0022]] This architectural property means that compromising a single node\u2014or even several nodes\u2014does not expose complete files. In a traditional cloud stack, data at rest in services like S3 is stored and managed by a single provider; DDC's distribution across independently operated nodes creates a structural barrier to unauthorized data reconstruction.\n\n### Client-Side Encryption and Key Control\n\n\"For sensitive data that requires protection at the storage level, client-side encryption is advised. By encrypting data before upload, you maintain complete control over your encryption keys, ensuring that only you can decrypt your data. Even node operators cannot access the plaintext content.\" [[chunk:p4-0023]] This is a critical security distinction: in DDC, data can be encrypted before it ever leaves the client, and no party in the infrastructure\u2014including node operators\u2014can read the data. The documents note that \"SDK-integrated key management with delegated access grants is in development.\" [[chunk:p4-0023]]\n\n### Access Control and Authentication\n\nDDC provides \"robust access control through bucket permissions (private/public) and owner-based authentication. This protects your data from unauthorized external access.\" [[chunk:p4-0023]] The SDK authenticates by \"signing requests with a user key (derived from seed / wallet). Blockchain transactions are signed and sent to the chain endpoint; storage/compute requests to DDC nodes are signed by the same identity and verified by the node. Authorization is enforced based on bucket permissions (public/private) and on-chain customer/bucket state.\" [[chunk:p2-0042]] This means authentication is cryptographic and identity-based rather than relying on provider-managed IAM credentials.\n\n### DAC Trust Layer and On-Chain Inspection\n\nThe Data Activity Capture (DAC) component serves as a \"Trust layer that captures real-time traffic and compute metrics, serving as the verified data source for blockchain-level inspection and automated payouts.\" [[chunk:p4-0023]] [[chunk:p1-0054]] This provides an independent, on-chain audit of all activity, which has no direct equivalent in traditional cloud stacks where metering and audit logs are controlled entirely by the cloud provider.\n\n### Protection Against Malicious Nodes\n\nDDC's architecture includes mechanisms to handle untrusted or malicious nodes. The documents describe \"Piece segment authentication (range requests) to protect receiving corrupted/incorrect data from potential malicious 3rd party nodes.\" [[chunk:p45-0074]] Milestone 4 specifies: \"Internal communication is protected against malicious activity. Each operation is authorized... Data transferred internally is authenticated by hashes.\" The acceptance criterion states: \"Malicious node providers can't increase their income in a dishonest way (e.g. generate invalid activity report) or hurt the cluster (pollute the network, corrupt data etc.).\" [[chunk:p32-0069]] Additionally, \"DAC is able to detect malicious nodes and remove them from the network.\" [[chunk:p47-0075]]\n\n### Smart Contract Governance and SLA Adherence\n\nDDC's design \"ensures a high standard of security and utility for these data clusters\" through \"advanced features like automated smart contract governance, real-time network monitoring, and strict SLA adherence.\" [[chunk:p4-0023]] The separation of cloud infrastructure and operations from the protocol is also highlighted, where \"specialized data can reside on the edge, while also ensuring seamless integration and interoperability through the Cere L1 Blockchain and smart contracts.\" [[chunk:p4-0023]]\n\n### Secure Edge Compute\n\nDDC enables \"private AI execution, ensuring that sensitive data and models remain secure at the edge\" through sovereign AI frameworks. [[chunk:p2-0022]] The Compute Layer \"Provides isolated execution environments for AI agents and model inference.\" [[chunk:p1-0054]] This edge-native approach means sensitive data does not need to traverse to a centralized cloud for processing.\n\n## Planned/Roadmap Items\n\n- **SDK-integrated key management with delegated access grants** is in development. [[chunk:p4-0023]]\n- **Milestone 4** (dated November 6, 2024): DDC is ready to accept untrusted nodes, with internal communication protected against malicious activity and data transferred internally authenticated by hashes. A proof-of-storage audit mechanism is also planned. [[chunk:p32-0069]]\n- **Full decentralisation** is targeted at Milestone 4 (January 1, 2028). [[chunk:p47-0075]]\n\n## What the Documents Do NOT Cover\n\n- The documents do not describe the specific security architectures of Databricks, Snowflake, AWS, or Azure. All comparisons are made against the generic category of \"traditional cloud stacks.\"\n- The documents do not address key loss scenarios for client-side encryption\u2014i.e., what happens if a user loses their encryption keys.\n- The documents do not detail the specific blockchain consensus mechanism used for on-chain verification.\n- The documents do not provide a direct feature-by-feature security comparison table against any named cloud provider.\n- The documents do not discuss compliance certifications (e.g., SOC 2, HIPAA) for DDC.\n\n## DOC_GAPS \u2014 Documentation Improvement Recommendations\n\n1. **GAP:** No documentation on key loss recovery for client-side encryption.\n **IMPLICATION:** The docs state users \"maintain complete control over your encryption keys\" but do not address what happens if keys are lost.\n **RECOMMENDATION:** Add a section to the Data Security documentation covering key loss scenarios, recovery options (if any), and best practices for key backup.\n\n2. **GAP:** No specific comparison with named platforms (Databricks, Snowflake, AWS, Azure) security models.\n **IMPLICATION:** The docs contrast DDC with \"traditional cloud stacks\" generically, but users evaluating DDC against specific platforms lack concrete differentiators.\n **RECOMMENDATION:** Add a comparison document or table mapping DDC security features against specific platform security models (e.g., AWS KMS vs. client-side encryption, AWS CloudTrail vs. DAC on-chain verification).\n\n3. **GAP:** No documentation on the blockchain consensus or verification mechanism specifics.\n **IMPLICATION:** The docs state operations are \"verified on-chain\" but do not explain the cryptographic or consensus mechanism.\n **RECOMMENDATION:** Add a technical section in the DDC Core Wiki or a dedicated ADR explaining how on-chain verification works at the protocol level.\n\n4. **GAP:** No documentation on compliance certifications or regulatory alignment.\n **IMPLICATION:** Enterprise users comparing DDC to AWS/Azure-based stacks will look for SOC 2, GDPR, HIPAA compliance evidence.\n **RECOMMENDATION:** Add a compliance/regulatory section to the DDC documentation.\n\n5. **GAP:** The status of the encrypted data access and key delegation ADR is referenced but its contents are not included in the evidence.\n **IMPLICATION:** The full encryption architecture and delegation model remain unclear.\n **RECOMMENDATION:** Ensure the ADR on Encrypted Data Access and Key Delegation is published and linked prominently from the Data Security section.\n\n## Citations Summary\n\n- [[chunk:p2-0022]] \u2014 DDC overview, trust model contrast with traditional cloud stacks, on-chain verification, data durability, edge AI\n- [[chunk:p4-0023]] \u2014 Client-side encryption, access control, erasure coding, DAC trust layer, smart contract governance\n- [[chunk:p1-0054]] \u2014 DDC Core components including compute isolation, DAC trust layer, resource manager\n- [[chunk:p2-0042]] \u2014 SDK authentication via cryptographic signing, bucket permissions enforcement\n- [[chunk:p45-0074]] \u2014 Piece segment authentication, malicious node protection, milestone planning\n- [[chunk:p32-0069]] \u2014 Milestone 4 malicious node handling, proof of storage, internal communication protection\n- [[chunk:p47-0075]] \u2014 DAC malicious node detection, full decentralisation roadmap",
-      "cited_chunks": [
-        "p47-0075",
-        "p32-0069",
-        "p45-0074",
-        "p2-0042",
-        "p1-0054",
-        "p4-0023",
-        "p2-0022"
-      ],
-      "evidence_chunks_provided": 12,
-      "evidence_chunks_cited": 7,
-      "outside_knowledge_flags": [
-        "Possible outside knowledge: 'best practice' detected"
-      ],
-      "overall_score": 0.7354,
-      "passed": false,
+      "question_id": "Q2",
+      "passed": true,
+      "overall_score": 0.8488,
       "scores": {
-        "grounded_correctness": 0.7911,
-        "completeness": 0.62,
+        "grounded_correctness": 0.8982,
+        "completeness": 0.905,
         "precision": 0.7,
-        "clarity": 0.85,
-        "citation_quality": 0.7
+        "clarity": 0.865,
+        "citation_quality": 0.78,
+        "grounded_correctness_original": 0.7343
       },
       "verification": {
-        "grounding": {},
-        "nli": {},
-        "ragas": {},
-        "claims_total": 0,
-        "claims_supported": 0,
-        "claims_failed": 0,
-        "overrides": 0,
-        "claim_details": []
-      }
+        "total_claims": 54,
+        "passed_claims": 53,
+        "failed_claims": 1,
+        "flagged_claims": 0,
+        "cache_hits": 20,
+        "claims": [
+          {
+            "text": "DDC documents contain an explicit comparison disclaimer stating security characteristics reflect DDC's architecture as documented internally and should not be interpreted as independently verified assessments of third-party platforms",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Specific claims regarding the security controls of named vendors such as Databricks or Snowflake have not been validated against current product documentation",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "documentation",
+                "Databricks",
+                "regarding"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Data stored within a DDC cluster remains in plaintext unless the client application explicitly encrypts it prior to upload",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "plaintext",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC currently lacks formal compliance certifications such as SOC 2 or ISO 27001",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC",
+                "SOC",
+                "ISO"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "In centralized platforms like AWS, Azure, Snowflake, and Databricks, encryption is typically managed server-side by the provider",
+            "status": "supported",
+            "cited_file": "DDC from Sergey Poluyan.pdf",
+            "cited_page": 19,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "AWS"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "In centralized platforms, plaintext data is accessible to the platform operator under certain access conditions",
+            "status": "supported",
+            "cited_file": "DDC from Sergey Poluyan.pdf",
+            "cited_page": 19,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "plaintext"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "In DDC, applications are required to encrypt data client-side before submission to storage nodes",
+            "status": "supported",
+            "cited_file": "DDC from Sergey Poluyan.pdf",
+            "cited_page": 19,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DEK is generated and held exclusively by the client",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DEK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DEK is never transmitted to or stored by any node within the DDC cluster",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DEK",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "No administrative override or cluster-level key recovery mechanism exists in DDC",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Data confidentiality in DDC is enforced architecturally rather than by policy",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Access to plaintext content remains solely under the control of the key-holding client regardless of cluster operator permissions or network governance decisions",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "plaintext"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "In an insider access scenario, DDC infrastructure operators have no privileged decryption capability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "A rogue administrator cannot unilaterally retrieve user data in DDC",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "In a provider subpoena scenario, compelled disclosure is constrained to what the cluster itself can access, which excludes plaintext content where ownership and access rights are enforced externally via smart contract or NFT registry",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "plaintext",
+                "NFT"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "In a data breach scenario, the absence of a central privileged access path eliminates the single-point extraction risk that makes centralized breaches catastrophic at scale",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "catastrophic",
+                "centralized",
+                "privileged"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC distributes stored data across multiple nodes within a cluster",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Each node in a DDC cluster is responsible for holding only a subset of the total file content",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Each node in a DDC cluster retains only a portion of the complete dataset rather than a full replica",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Full dataset reconstruction requires coordination across the cluster rather than access to any single node",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "reconstruction",
+                "coordination",
+                "requires"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "The Dragon 1 cluster uses a 16/48 erasure coding scheme",
+            "status": "supported",
+            "cited_file": "Data Redundancy Strategy.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "16/48",
+                "erasure coding",
+                "Dragon 1",
+                "The Dragon"
+              ],
+              "missing_terms": [],
+              "detail": "Found 4/4 key terms on cited page."
+            }
+          },
+          {
+            "text": "Any 16 of the 48 chunks are sufficient to reconstruct the original data in the Dragon 1 cluster",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 5,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Dragon 1"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Erasure coding in DDC is a fault-tolerance mechanism, not a confidentiality control",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Erasure coding",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "When data is split into fragments and distributed across cluster nodes, individual node operators can observe the content of the fragments stored on their nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "distributed",
+                "individual",
+                "fragments"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Applications requiring confidentiality must encrypt data prior to upload",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "confidentiality",
+                "Applications",
+                "requiring"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC provides access control enforcement at the protocol level, where only cryptographically authorized requests are processed by CDN and storage nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC",
+                "CDN"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Granular permissions can be scoped to individual buckets, pieces, or collections in DDC",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC access control properties are enforced by smart contracts rather than a centralized policy engine",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The authentication model implements a recursive JWT-like token structure that functions as a verifiable trust chain",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "trust chain",
+                "JWT"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Any client presenting a token to the DDC can be cryptographically traced back through the chain of delegating parties",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC nodes never process or receive user seed phrases",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Authentication is handled client-side: the SDK derives a signing key from the user's seed or wallet locally",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "SDK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The SDK uses the derived signing key to sign storage and compute requests before they are transmitted to DDC nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "SDK",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DAC layer captures real-time traffic and compute metrics",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 2,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DAC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DAC layer serves as the verified data source for blockchain-level inspection and automated payouts",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 2,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DAC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The Cere Blockchain serves as an immutable repository within the DDC architecture, storing validation results",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "The Cere Blockchain",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "No single service provider controls the authoritative configuration state in DDC because records are written to a decentralized ledger",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC clusters distribute data across peer-to-peer nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "peer-to-peer",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC clusters operate without a centralized coordinator",
+            "status": "failed",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "mismatch",
+              "confidence": 0.9,
+              "matched_terms": [],
+              "missing_terms": [
+                "without a centralized"
+              ],
+              "detail": "Claim asserts 'without a centralized' but this phrase does not appear on the cited page (or adjacent pages)."
+            }
+          },
+          {
+            "text": "DDC relies on distributed protocols for all routing, data placement, and replication decisions",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC nodes can continue serving storage and compute requests even when the blockchain is temporarily unavailable",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC nodes use disk-persisted indexes for continued operation during blockchain unavailability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "disk-persisted",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC nodes use local authentication enforcement for continued operation during blockchain unavailability",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC autonomous edge clusters support regional data sovereignty requirements by ensuring data processing and storage remain within designated geographic boundaries",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Each edge cluster operates independently, meaning data does not traverse external nodes or centralized infrastructure outside the defined region",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "infrastructure",
+                "independently",
+                "centralized"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC does not encrypt data at rest by default",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Client-side encryption is available manually in DDC",
+            "status": "supported",
+            "cited_file": "DDC from Sergey Poluyan.pdf",
+            "cited_page": 5,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Client-side encryption",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Transport Layer Security (TLS) is not enforced by default across DDC storage and CDN nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Transport Layer Security",
+                "TLS",
+                "DDC",
+                "CDN"
+              ],
+              "missing_terms": [],
+              "detail": "Found 4/4 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC has not yet published results from independent third-party security audits",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Protocol-level Sybil resistance is not currently enforced by the DDC core protocol",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "A single actor may operate multiple nodes that appear independent, undermining the security assumptions of data distribution",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "distribution",
+                "independent",
+                "undermining"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "When a single operator controls k or more nodes within a DDC cluster, that operator possesses sufficient shares to reconstruct the original data independently",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC clusters do not implement a cluster-level key recovery mechanism",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "If a client loses their encryption key, neither cluster operators nor network governance processes can recover access to the encrypted content",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "encryption",
+                "governance",
+                "operators"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          }
+        ]
+      },
+      "ragas_faithfulness": 0.9865,
+      "dual_eval": true,
+      "verification_floor_applied": false,
+      "score_blend_applied": true
     },
     "Q3": {
-      "question_text": "How can I store my data on this data cluster with my data wallet and key? What makes it secure?",
-      "loop": "A",
-      "route_reason": "Question Q3 asks about DDC in isolation \u2014 no external comparison needed.",
-      "answer_markdown": "# How to Store Data on a DDC Cluster with Your Wallet and Key, and What Makes It Secure\n\n## Direct Answer\n\nYou store data on a DDC cluster by creating a `DdcClient` instance initialized with your wallet seed/mnemonic, creating a bucket on a cluster, and then uploading data to that bucket using the SDK. Security is provided through multiple layers: pallet-based access control on the blockchain, recursive JWT-like signed token chains for authentication/authorization, erasure coding for data redundancy, and optional client-side encryption to ensure even storage node operators cannot read your data.\n\n## Detailed Explanation\n\n### Storing Data with Your Wallet and Key\n\nTo store data on a DDC cluster, you use the DDC Client SDK with your wallet's seed phrase (mnemonic). The process involves:\n\n1. **Initialize the client** with your wallet seed and connect to a cluster. As shown in the SDK documentation, you create a `DdcClient` instance: `const client = await DdcClient.create(user, TESTNET);` where `user` is your mnemonic seed phrase. [[chunk:p6-0035]]\n\n2. **Ensure sufficient deposit.** Your wallet should have enough CERE tokens. You can check and deposit balance: `await client.depositBalance(clusterId, 5n * CERE);` [[chunk:p6-0035]]\n\n3. **Create a bucket** on the cluster: `const bucketId = await client.createBucket(clusterId, { isPublic: true });` [[chunk:p6-0035]]\n\n4. **Store data** into the bucket: `const fileUri = await client.store(bucketId, ddcFile);` \u2014 this returns a content identifier (CID) for retrieval. [[chunk:p6-0035]]\n\nAlternatively, at a lower level, you can use the `FileStorage` API or the `StorageNode` API directly. For example, using the `StorageNode` API: you create a `UriSigner` with your mnemonic, instantiate a `StorageNode`, and call `storageNode.storePiece(bucketId, piece)` to store content. [[chunk:p6-0043]]\n\nA CLI option is also available: `npx @cere-ddc-sdk/cli upload ./picture.jpg --signer \"<mnemonic>\" --clusterId \"<id>\" --bucketId <id>`. [[chunk:p6-0043]]\n\n### What Makes It Secure\n\n#### 1. Pallet-Based (Blockchain) Access Control\n\nThe bucket owner is defined during bucket creation and stored on-chain in the pallet, giving the owner root access. The pallet can manage access control so the bucket owner can grant access (e.g., read/write) to other clients. [[chunk:p5-0049]] DDC provides \"robust access control through bucket permissions (private/public) and owner-based authentication. This protects your data from unauthorized external access.\" [[chunk:p4-0023]]\n\n#### 2. Recursive Token-Based Authentication (Trust Chain)\n\nDDC uses \"recursive JWT-like signed tokens that represent a trust chain where first token is issued by the client that have an access on pallet level and last token is signed by the client that sends a request to DDC.\" [[chunk:p7-0051]] Each token in the chain contains a signature, subject (public key of the delegatee), allowed operations, expiration, and optional content scope (`pieceCid`). Each subsequent token must have equal or fewer privileges than the previous one. [[chunk:p7-0051]]\n\nThe consequence is a \"trust chain where root token is secured by access on pallet (blockchain) level. Each link in trust chain has a signature that secures whole trust chain and it can't be broken. Similar as blockchain but in our case tokenchain.\" Trust chain roots are revocable on pallet level, meaning \"access can be revoked to all chains issued by that root at one operation.\" [[chunk:p13-0053]]\n\nFor private buckets, you generate an access token: `const accessToken = await client.grantAccess(userSigner.address, { bucketId, operations: [AuthTokenOperation.GET], pieceCid: fileUri.cid });` [[chunk:p6-0035]]\n\n#### 3. Data Redundancy via Erasure Coding\n\n\"DDC uses erasure coding to distribute your data across multiple nodes in the cluster, providing redundancy and availability. Data is split into fragments, with each node storing only a portion of your files. For a malicious actor to reconstruction a file, they require control over a significant portion of the cluster.\" [[chunk:p4-0023]] The target durability level references AWS S3's 99.999999999% (11 nines), and erasure coding with parameters like k=16, n=40 achieves comparable durability while being approximately 5 times more efficient in storage space than replication. [[chunk:p3-0039]]\n\n#### 4. Client-Side Encryption\n\n\"For sensitive data that requires protection at the storage level, client-side encryption is advised. By encrypting data before upload, you maintain complete control over your encryption keys, ensuring that only you can decrypt your data. Even node operators cannot access the plaintext content.\" [[chunk:p4-0023]]\n\nThe target encrypted data flow has data encrypted client-side with a DEK (Data Encryption Key), where \"Data is stored and transmitted in plaintext\" is replaced by ciphertext, and the DEK is \"shared via delegated encryption grants.\" [[chunk:p2-0001]]\n\nThe encryption system uses AES-256-GCM for data encryption, X25519 (ECDH) for key exchange, HKDF-SHA256 for key derivation, and Ed25519 for signing. [[chunk:p47-0018]] The threat model includes mitigations: compromised storage nodes cannot see plaintext because data is encrypted client-side; keys are never transmitted in plaintext but always wrapped via ECDH; replay attacks are mitigated with timestamps and nonces; and privilege escalation is prevented by constraint validation at each delegation level. [[chunk:p47-0018]]\n\n#### 5. Encryption Grant and Key Delegation\n\nFor delegated access to encrypted data, the system supports encryption grants embedded in auth tokens. Storage nodes verify encryption grants including constraints on max depth, allowed operations, TTL, key references, and derivation proofs. [[chunk:p41-0016]] Users generate a DEK, encrypt data, then wrap the DEK using ECDH (X25519) for the intended recipient's public key. [[chunk:p11-0007]]\n\n## Planned/Roadmap Items\n\n- **SDK-integrated key management with delegated access grants is in development.** The document states: \"Client-side encryption is available manually. SDK-integrated key management with delegated access grants is in development.\" [[chunk:p4-0023]]\n- The implementation plan includes multiple phases: Phase 2 for Encryption Grant in Token (3 weeks), Phase 3 for Key Derivation (2 weeks), Phase 4 for Key Escrow Service (4 weeks), Phase 5 for Agent Runtime Integration (3 weeks), and Phase 6 (optional) for On-Chain Registry (4 weeks). [[chunk:p47-0018]]\n\n## What the Documents Do NOT Cover\n\n- The term \"data wallet\" is not explicitly used in the provided evidence. The system uses mnemonic seed phrases and keypairs for identity and access. There is no documentation of a specific \"data wallet\" product or component.\n- Detailed key backup or key loss recovery procedures are not addressed in the evidence.\n- Specific blockchain dependency details (e.g., which chain operations are required vs. optional for basic storage) are not comprehensively covered.\n\n## DOC_GAPS \u2014 Documentation Improvement Recommendations\n\n1. **GAP:** No documentation explicitly uses or defines the term \"data wallet\" or maps it to the mnemonic/keypair-based identity system.\n - **IMPLICATION:** Users asking about a \"data wallet\" may be referring to the mnemonic-based signer, but the docs don't bridge this terminology.\n - **RECOMMENDATION:** Add a glossary entry or onboarding section in \"Get Started with DDC\" that explains how a user's wallet (mnemonic/seed phrase) relates to DDC identity, bucket ownership, and data access.\n\n2. **GAP:** No documentation covers key loss scenarios \u2014 what happens if a user loses their mnemonic/private key.\n - **IMPLICATION:** Users may assume there is a recovery mechanism.\n - **RECOMMENDATION:** Add a section on key management best practices and key loss implications to the DDC security or getting started documentation.\n\n3. **GAP:** The relationship between the \"data wallet,\" \"key,\" and \"data cluster\" as a unified user journey is not documented in a single guide.\n - **IMPLICATION:** Users must piece together information from SDK docs, auth ADR, and encryption ADR.\n - **RECOMMENDATION:** Create an end-to-end tutorial titled \"Storing Secure Data on DDC: From Wallet Setup to Encrypted Upload\" that covers wallet creation, cluster selection, bucket creation, upload, access control, and optional encryption in one document.\n\n4. **GAP:** Client-side encryption is described as \"available manually\" but no step-by-step guide for manual client-side encryption before upload is provided in the evidence.\n - **IMPLICATION:** Users who need encryption today have no clear instructions.\n - **RECOMMENDATION:** Add a manual encryption tutorial to the SDK wiki showing how to encrypt data before calling `client.store()`.\n\n## Citations Summary\n\n- [[chunk:p6-0035]] \u2014 Get Started with DDC: client creation, bucket creation, file storage, access token generation\n- [[chunk:p6-0043]] \u2014 DDC Client JS SDK Wiki: FileStorage, StorageNode, CLI examples\n- [[chunk:p5-0049]] \u2014 ADR Authentication and Authorization: pallet-based access control, token-based delegation\n- [[chunk:p7-0051]] \u2014 ADR Authentication and Authorization: recursive JWT-like token trust chain specification\n- [[chunk:p13-0053]] \u2014 ADR Authentication and Authorization: trust chain consequences, revocability\n- [[chunk:p4-0023]] \u2014 DDC from Sergey Poluyan: access control, erasure coding, client-side encryption\n- [[chunk:p3-0039]] \u2014 Data Redundancy Strategy: erasure coding durability calculations\n- [[chunk:p2-0001]] \u2014 Encrypted Data Access and Key Delegation: current vs. target data flow, DEK\n- [[chunk:p11-0007]] \u2014 Encrypted Data Access and Key Delegation: key hierarchy, encryption grant flow\n- [[chunk:p41-0016]] \u2014 Encrypted Data Access and Key Delegation: storage node grant verification\n- [[chunk:p47-0018]] \u2014 Encrypted Data Access and Key Delegation: implementation phases, threat model, cryptographic choices",
-      "cited_chunks": [
-        "p5-0049",
-        "p47-0018",
-        "p7-0051",
-        "p2-0001",
-        "p6-0035",
-        "p13-0053",
-        "p3-0039",
-        "p6-0043",
-        "p11-0007",
-        "p41-0016",
-        "p4-0023"
-      ],
-      "evidence_chunks_provided": 12,
-      "evidence_chunks_cited": 11,
-      "outside_knowledge_flags": [
-        "Possible outside knowledge: 'best practice' detected"
-      ],
-      "overall_score": 0.745,
-      "passed": false,
+      "question_id": "Q3",
+      "passed": true,
+      "overall_score": 0.8731,
       "scores": {
-        "grounded_correctness": 0.7499999999999999,
-        "completeness": 0.75,
+        "grounded_correctness": 0.9017,
+        "completeness": 1.0,
         "precision": 0.7,
-        "clarity": 0.85,
-        "citation_quality": 0.7
+        "clarity": 0.875,
+        "citation_quality": 0.8
       },
       "verification": {
-        "grounding": {},
-        "nli": {},
-        "ragas": {},
-        "claims_total": 0,
-        "claims_supported": 0,
-        "claims_failed": 0,
-        "overrides": 0,
-        "claim_details": []
-      }
+        "total_claims": 60,
+        "passed_claims": 51,
+        "failed_claims": 6,
+        "flagged_claims": 3,
+        "cache_hits": 20,
+        "claims": [
+          {
+            "text": "A data wallet is an sr25519 cryptographic keypair that serves as your identity within the DDC network",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "sr25519",
+                "data wallet",
+                "keypair",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 4/4 key terms on cited page."
+            }
+          },
+          {
+            "text": "A data wallet consists of a public key, which functions as your on-chain address",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 41,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "on-chain",
+                "data wallet"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "A data wallet consists of a private key, used to sign DDC operations",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 41,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "data wallet",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "A data wallet consists of a mnemonic seed phrase, used to recover the keypair if access is lost",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 41,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "mnemonic",
+                "seed phrase",
+                "data wallet",
+                "keypair"
+              ],
+              "missing_terms": [],
+              "detail": "Found 4/4 key terms on cited page."
+            }
+          },
+          {
+            "text": "You generate a new data wallet using the DDC CLI command: npx @cere-ddc-sdk/cli account --random",
+            "status": "supported",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 0.667,
+              "matched_terms": [
+                "DDC",
+                "CLI"
+              ],
+              "missing_terms": [
+                "data wallet"
+              ],
+              "detail": "Found 2/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "The data wallet generation output includes a mnemonic",
+            "status": "flagged",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "ungrounded",
+              "confidence": 0.5,
+              "matched_terms": [
+                "mnemonic"
+              ],
+              "missing_terms": [
+                "data wallet"
+              ],
+              "detail": "Only 1/2 key terms found on cited page. Missing: data wallet"
+            }
+          },
+          {
+            "text": "The data wallet generation output includes key type sr25519",
+            "status": "flagged",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "ungrounded",
+              "confidence": 0.5,
+              "matched_terms": [
+                "sr25519"
+              ],
+              "missing_terms": [
+                "data wallet"
+              ],
+              "detail": "Only 1/2 key terms found on cited page. Missing: data wallet"
+            }
+          },
+          {
+            "text": "The data wallet generation output includes an address",
+            "status": "failed",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "ungrounded",
+              "confidence": 0.0,
+              "matched_terms": [],
+              "missing_terms": [
+                "data wallet"
+              ],
+              "detail": "None of the 1 key terms found on cited page 3."
+            }
+          },
+          {
+            "text": "Without the mnemonic seed phrase, you can't recover your wallet and lose everything inside",
+            "status": "supported",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "mnemonic",
+                "seed phrase"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "The account must have a positive CERE token balance to cover transaction fees",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "CERE"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The account must have a DDC-specific deposit held against your account",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DDC deposit is separate from your general token balance",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DDC deposit must be funded prior to creating a client instance",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "You can top up the account by using the faucet",
+            "status": "supported",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "account",
+                "faucet",
+                "using"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "You can top up the account by sending some amount of CERE tokens from another account",
+            "status": "supported",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "CERE"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "To make the deposit programmatically: const tx = blockchain.ddcCustomers.deposit(deposit); await blockchain.send(tx, { account })",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 7,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 0.667,
+              "matched_terms": [
+                "ddcCustomers",
+                "blockchain"
+              ],
+              "missing_terms": [
+                "programmatically"
+              ],
+              "detail": "Found 2/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Initialize the DDC client with: const client = await DdcClient.create(seedPhrase, TESTNET)",
+            "status": "supported",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DdcClient",
+                "DDC",
+                "TESTNET"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Create a bucket with: const bucketId = await client.createBucket(clusterId, { isPublic: true })",
+            "status": "supported",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 5,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The wallet that initiated the bucket creation transaction automatically becomes the bucket owner",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The bucket owner is automatically granted root access to that bucket",
+            "status": "failed",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The bucket owner can perform all operations on the bucket, including read, write, and delete",
+            "status": "failed",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The bucket owner can delegate access permissions to other parties",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 3,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "To upload a file: const file = new File(fileStream, { size: fileStats.size }); const fileUri = await client.store(bucketId, file)",
+            "status": "supported",
+            "cited_file": "Get Started with DDC.pdf",
+            "cited_page": 5,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "fileUri"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Each stored piece receives a CID (Content Identifier)",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "CID",
+                "Content Identifier"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "CID is based on the content's cryptographic hash label used to point to material",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "CID"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "To retrieve data: const fileResponse = await client.read(uri)",
+            "status": "failed",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 5,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 0.667,
+              "matched_terms": [
+                "fileResponse",
+                "client"
+              ],
+              "missing_terms": [
+                "retrieve"
+              ],
+              "detail": "Found 2/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "You can use the CLI for upload operations: npx @cere-ddc-sdk/cli upload ./picture.jpg --signer \"...\" --clusterId \"...\" --bucketId 27327",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 9,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "...",
+                "CLI"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "The SDK authenticates by signing requests with a user key derived from seed / wallet",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "SDK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC nodes never process or receive user seed phrases",
+            "status": "failed",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Authentication is handled client-side: the SDK derives a signing key from the user's seed or wallet locally",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "SDK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The SDK uses the signing key to sign storage and compute requests before they are transmitted to DDC nodes",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "SDK",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Nodes verify the cryptographic signature against the declared identity without ever having access to the underlying seed material",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 66,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "cryptographic",
+                "underlying",
+                "signature"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "The signature is constructed using the sr25519 signing algorithm",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 56,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "sr25519"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The signature is constructed over a concatenated byte sequence comprising the request identifier, bucket identifier, timestamp, and the user's public key",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 56,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Authorization is enforced based on bucket permissions (public/private) and on-chain customer/bucket state",
+            "status": "supported",
+            "cited_file": "DDC Client JS SDK Wiki.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket",
+                "on-chain"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Only authorized requests can be processed by the CDN and storage nodes",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "CDN"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Read access can be granted to a whole bucket",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Read access can be granted to a single piece",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "granted",
+                "access",
+                "single"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Read access can be granted to a collection of pieces",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "collection",
+                "granted",
+                "access"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Write/delete access can be granted to a whole bucket only",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 4,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "bucket"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC uses recursive JWT-like signed tokens that represent a trust chain",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 7,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "trust chain",
+                "JWT",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "The first token in the trust chain is issued by the client that has access on pallet level",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 7,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "trust chain",
+                "pallet"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "The last token in the trust chain is signed by the client that sends a request to DDC",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 7,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "trust chain",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Only pallet based access is revocable",
+            "status": "failed",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 13,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "pallet"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Token-based grants cannot be revoked once issued",
+            "status": "flagged",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 13,
+            "grounding": {
+              "verdict": "ungrounded",
+              "confidence": 0.333,
+              "matched_terms": [
+                "revoked"
+              ],
+              "missing_terms": [
+                "grants",
+                "cannot"
+              ],
+              "detail": "Only 1/3 key terms found on cited page. Missing: grants, cannot"
+            }
+          },
+          {
+            "text": "Token-based grants rely on expiration times",
+            "status": "supported",
+            "cited_file": "ADR Authentication and Authorization.pdf",
+            "cited_page": 13,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 0.667,
+              "matched_terms": [
+                "expiration",
+                "Token"
+              ],
+              "missing_terms": [
+                "grants"
+              ],
+              "detail": "Found 2/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Data stored within a cluster remains in plaintext unless the client application explicitly encrypts it prior to upload",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "plaintext"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "Client-side encryption is available manually",
+            "status": "supported",
+            "cited_file": "DDC from Sergey Poluyan.pdf",
+            "cited_page": 5,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Client-side encryption"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The protocol does not validate or reject unencrypted payloads at ingestion time",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 2,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "unencrypted",
+                "ingestion",
+                "protocol"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "If an application fails to encrypt data before writing to DDC, those records are stored as plaintext across cluster nodes with no automatic remediation",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 2,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "plaintext",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "To encrypt before upload, generate a Data Encryption Key (DEK) on the client side",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DEK",
+                "Data Encryption Key"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "Use a standard symmetric cipher such as AES-256-GCM to encrypt the raw bytes locally, then upload the ciphertext",
+            "status": "supported",
+            "cited_file": "Encrypted Data Access and Key Delegation.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "AES",
+                "GCM"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "The data encryption key (DEK) is generated and held exclusively by the client",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DEK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "The DEK is never transmitted to or stored by any node within the DDC cluster",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DEK",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "No administrative override or cluster-level key recovery mechanism exists",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "administrative",
+                "mechanism",
+                "override"
+              ],
+              "missing_terms": [],
+              "detail": "Found 3/3 key terms on cited page."
+            }
+          },
+          {
+            "text": "Because no cluster node holds a copy of the DEK, the cluster cannot decrypt stored content on behalf of any party",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DEK"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC distributes stored data across cluster nodes by splitting files into fragments",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          },
+          {
+            "text": "DDC uses erasure coding, a fault-tolerance mechanism that enables data reconstruction even when a subset of nodes becomes unavailable",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "erasure coding",
+                "DDC"
+              ],
+              "missing_terms": [],
+              "detail": "Found 2/2 key terms on cited page."
+            }
+          },
+          {
+            "text": "The Dragon 1 cluster uses a 16/48 erasure coding scheme",
+            "status": "supported",
+            "cited_file": "Data Redundancy Strategy.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "16/48",
+                "erasure coding",
+                "Dragon 1",
+                "The Dragon"
+              ],
+              "missing_terms": [],
+              "detail": "Found 4/4 key terms on cited page."
+            }
+          },
+          {
+            "text": "Erasure coding is a fault-tolerance mechanism, not a confidentiality control",
+            "status": "supported",
+            "cited_file": "DDC Core Wiki.pdf",
+            "cited_page": 1,
+            "grounding": {
+              "verdict": "grounded",
+              "confidence": 1.0,
+              "matched_terms": [
+                "Erasure coding"
+              ],
+              "missing_terms": [],
+              "detail": "Found 1/1 key terms on cited page."
+            }
+          }
+        ]
+      },
+      "ragas_faithfulness": 0.9701,
+      "dual_eval": true,
+      "verification_floor_applied": false,
+      "score_blend_applied": false
     }
   },
-  "improvements": []
+  "improvements": [],
+  "report_path": "reports/latest_report.md"
 }
