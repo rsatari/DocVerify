@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDC Documentation — Edit Review</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a;
+    --text: #e2e4e9; --text-muted: #8b8fa3;
+    --green: #3dd68c; --green-bg: rgba(61,214,140,0.08); --green-border: rgba(61,214,140,0.25);
+    --amber: #f0a83a; --amber-bg: rgba(240,168,58,0.08); --amber-border: rgba(240,168,58,0.25);
+    --red: #ef5f5f; --red-bg: rgba(239,95,95,0.08); --red-border: rgba(239,95,95,0.25);
+    --blue: #5b9cf5; --purple: #a78bfa; --purple-bg: rgba(167,139,250,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text);
+         line-height: 1.6; padding: 2rem; max-width: 1000px; margin: 0 auto; }
+  .header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  .header h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
+  .header .meta { color: var(--text-muted); font-size: 0.85rem; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1rem; }
+  .stat .label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat .value { font-size: 1.6rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+  .stat.auto .value { color: var(--green); }
+  .stat.flagged .value { color: var(--amber); }
+  .stat.manual .value { color: var(--red); }
+  .legend { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+             padding: 1rem 1.25rem; margin-bottom: 2rem; font-size: 0.85rem; }
+  .legend h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+                color: var(--text-muted); margin-bottom: 0.6rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.auto { background: var(--green); }
+  .legend-dot.flagged { background: var(--amber); }
+  .legend-dot.manual { background: var(--red); }
+  .edit-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+               margin-bottom: 1.25rem; overflow: hidden; }
+  .edit-card.track-auto { border-left: 3px solid var(--green); }
+  .edit-card.track-flagged { border-left: 3px solid var(--amber); }
+  .edit-card.track-manual { border-left: 3px solid var(--red); }
+  .edit-header { padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
+                 display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+  .edit-header .doc { font-weight: 500; font-size: 0.9rem; }
+  .edit-header .doc .num { color: var(--text-muted); font-family: 'IBM Plex Mono'; font-size: 0.8rem; }
+  .badges { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .badge { font-size: 0.65rem; padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 500;
+           font-family: 'IBM Plex Mono', monospace; }
+  .badge.auto { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .badge.flagged { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+  .badge.manual { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .badge.question { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+  .edit-body { padding: 1.25rem; }
+  .rationale { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;
+               padding-left: 0.75rem; border-left: 2px solid var(--border); }
+  .context-label, .insertion-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
+                                     color: var(--text-muted); margin-bottom: 0.35rem; font-weight: 500; }
+  .context { background: var(--bg); padding: 0.85rem 1rem; border-radius: 6px;
+             font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--text-muted);
+             margin-bottom: 1rem; white-space: pre-wrap; border: 1px solid var(--border); }
+  .insertion { padding: 0.85rem 1rem; border-radius: 6px; margin-bottom: 1rem;
+              white-space: pre-wrap; font-size: 0.88rem; position: relative; padding-left: 1.5rem; }
+  .insertion.auto { background: var(--green-bg); border: 1px solid var(--green-border); }
+  .insertion.flagged { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+  .insertion.manual { background: var(--red-bg); border: 1px solid var(--red-border); }
+  .insertion::before { content: "+"; position: absolute; left: 0.4rem; top: 0.85rem;
+                       font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem; }
+  .insertion.auto::before { color: var(--green); }
+  .insertion.flagged::before { color: var(--amber); }
+  .insertion.manual::before { color: var(--red); }
+  .sources { margin-top: 0.5rem; }
+  .sources-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
+                   color: var(--text-muted); margin-bottom: 0.35rem; }
+  .source-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: var(--bg);
+                  border: 1px solid var(--border); color: var(--text-muted); padding: 0.2rem 0.6rem;
+                  border-radius: 4px; font-size: 0.75rem; margin-right: 0.35rem; margin-bottom: 0.25rem;
+                  font-family: 'IBM Plex Mono', monospace; text-decoration: none; }
+  a.source-badge:hover { border-color: var(--blue); color: var(--blue); }
+  .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
+            color: var(--text-muted); font-size: 0.8rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📝 DDC Documentation — Edit Review</h1>
+  <div class="meta">Generated: 2026-03-02 01:22 · 18 edits across 2 documents</div>
+</div>
+
+<div class="stats">
+  <div class="stat auto"><div class="label">Auto-Applied</div><div class="value">18</div></div>
+  <div class="stat flagged"><div class="label">Flagged (Spot-Check)</div><div class="value">0</div></div>
+  <div class="stat manual"><div class="label">Manual Review</div><div class="value">0</div></div>
+</div>
+
+<div class="legend">
+  <h3>How edits are processed</h3>
+  <div class="legend-item"><span class="legend-dot auto"></span> <strong>Auto-applied</strong> — Already in docs (reorg) or externally confirmed. Feeds into next pipeline run automatically.</div>
+  <div class="legend-item"><span class="legend-dot flagged"></span> <strong>Flagged</strong> — Medium confidence. Applied automatically but review recommended. Reject via CLI if wrong.</div>
+  <div class="legend-item"><span class="legend-dot manual"></span> <strong>Manual only</strong> — Unverified. Shown as proposal. Must be approved before feeding back.</div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#1</span> DDC Core Wiki.pdf · p.4</span>
+    <span class="badges"><span class="badge question">Q1</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The documents reference a latency table for node failure scenarios but it remains unpopulated.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">| [external: https://forum.finescale.com/t/dragon-1-16-figures-any-good/122245] | [external: https://gkhajduk.github.io/2017-03-09-mixed-models/] --&gt;
+
+In the 16/48 erasure coding scheme, a DDC cluster tolerates the simultaneous loss of up to 32 storage nodes without data loss. This threshold is der</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">During node failure events, client read latency in DDC is influenced by whether requested content is available at the CDN layer or must be retrieved from the storage layer. When a CDN node cannot serve cached content, requests are proxied to the storage layer, introducing additional round-trip overhead. Latency outcomes depend on node lifetime estimates and cluster state propagation delays at the time of failure. Quantitative measurements from Milestone 1 simulations are pending publication; the table below will be populated with empirical read latency data once those results are formally recorded.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: ADR Authentication and Authorization.pdf (14 pages)]</span> <a href="https://www.cs.cornell.edu/people/egs/sqrt-s/doc/TR2006-2025.pdf" target="_blank" class="source-badge">🌐 https://www.cs.cornell.edu/people/egs/sqrt-s/doc/T</a> <a href="https://docs.opensearch.org/latest/monitoring-your-cluster/pa/reference/" target="_blank" class="source-badge">🌐 https://docs.opensearch.org/latest/monitoring-your</a> <a href="https://dev.to/david_kjerrumgaard_d31d7e/latency-numbers-every-data-streaming-engineer-should-know-h91" target="_blank" class="source-badge">🌐 https://dev.to/david_kjerrumgaard_d31d7e/latency-n</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#2</span> DDC Core Wiki.pdf · p.23</span>
+    <span class="badges"><span class="badge question">Q1</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The 99.9% availability target is stated for &quot;edge and hybrid cluster configurations&quot; collectively, without per-topology differentiation.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">ets, and are advised to conduct repair benchmarking under their specific network conditions until standardized edge cluster SLA targets are published.
+
+&lt;!-- EDIT-START: Q1 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: No documented SLA targets specific to edge clusters (the 99.9% figure is for &quot;edge</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">Edge cluster deployments operate under topology-specific availability constraints that differ from hybrid configurations. The published 99.9% availability target applies to edge and hybrid configurations collectively and should not be used as a per-topology SLA baseline for planning purposes. Enterprises deploying minimum-size edge clusters should conduct benchmarking under their specific network conditions until standardized edge cluster SLA targets are published. Assuming 99.9% availability independently for a small edge cluster may result in under-provisioned redundancy and unmet uptime expectations in production environments.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://help.honeywellaidc.com/trust/Content/Reliability.htm" target="_blank" class="source-badge">🌐 https://help.honeywellaidc.com/trust/Content/Relia</a> <a href="https://www.penguinsolutions.com/en-us/resources/blog/rule-nines-availability-always-on-world" target="_blank" class="source-badge">🌐 https://www.penguinsolutions.com/en-us/resources/b</a> <a href="https://web-alert.io/blog/uptime-sla-explained-99-9-vs-99-99-availability" target="_blank" class="source-badge">🌐 https://web-alert.io/blog/uptime-sla-explained-99-</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#3</span> DDC Core Wiki.pdf · p.1</span>
+    <span class="badges"><span class="badge question">Q1</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: Edge cluster repair benchmarks are described as &quot;pending publication.&quot;</div>
+    <div class="context-label">Original context</div>
+    <div class="context">uarantees, rollback procedures, or partial-write behavior without that evidence would risk introducing inaccurate information into your documentation.
+
+To write this section accurately, please provide internal sources describing DDC's consensus or quorum protocol, write path architecture, or any exi</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">Edge cluster repair performance benchmarks for 5-node configurations are currently pending publication. Until this data is available, operators should treat SLA targets for fault recovery scenarios as provisional and avoid committing to contractual recovery time objectives based on unverified estimates.
+
+Operators sizing edge cluster deployments can reference the connection limits documented for edge cluster onboarding as a baseline for capacity planning: a maximum of 5000 active HTTP requests, 2048 queued pending requests, and a defined ceiling on simultaneous TCP connections. These parameters constrain throughput during degraded states and should inform conservative SLA modeling until formal repair benchmarks are released.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://traceabledocs.document360.io/docs/protection-edge-cluster-onboarding" target="_blank" class="source-badge">🌐 https://traceabledocs.document360.io/docs/protecti</a> <a href="https://documentation.suse.com/suse-edge/3.5/single-html/edge/edge.html" target="_blank" class="source-badge">🌐 https://documentation.suse.com/suse-edge/3.5/singl</a> <a href="https://learn.microsoft.com/en-us/troubleshoot/windows-server/high-availability/windows-server-failover-cluster-health-service" target="_blank" class="source-badge">🌐 https://learn.microsoft.com/en-us/troubleshoot/win</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#4</span> DDC Core Wiki.pdf · p.1</span>
+    <span class="badges"><span class="badge question">Q1</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The documents do not explicitly describe how workloads are &quot;automatically redistributed&quot; at the mechanism level (e.g., which protocol component triggers redistribution, what triggers it, how quickly).</div>
+    <div class="context-label">Original context</div>
+    <div class="context">external: https://vadoc.virginia.gov/files/operating-procedures/800/vadoc-op-830-2.pdf] | [external: https://policy.umn.edu/it/dataclassification] --&gt;
+
+&lt;!-- EDIT-START: Q1 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: The documents do not describe what happens to in-flight writes when an edge cluster</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">When a storage or compute node becomes unavailable, the DDC Orchestrator detects the failure and initiates workload redistribution across the remaining healthy nodes in the cluster. This process is governed by assignment logic configured within the Orchestrator, which continuously monitors node state and reallocates tasks without requiring manual intervention.
+
+Redistribution is triggered by node health signals surfaced through the cluster execution layer. The Orchestrator then applies distribution rules to reassign affected workloads to available nodes, maintaining continuity of service. This behavior is a property of the cluster architecture rather than any single application layer.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC from Sergey Poluyan.pdf (21 pages)]</span> <a href="https://www.red-gate.com/simple-talk/featured/what-is-oracle-rac-and-why-use-it-for-scaling-workloads/" target="_blank" class="source-badge">🌐 https://www.red-gate.com/simple-talk/featured/what</a> <a href="https://blog.eclarifire.com/gain-efficiencies-automated-workload-distribution" target="_blank" class="source-badge">🌐 https://blog.eclarifire.com/gain-efficiencies-auto</a> <a href="https://www.redwood.com/resource/what-is-workload-automation/" target="_blank" class="source-badge">🌐 https://www.redwood.com/resource/what-is-workload-</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#5</span> DDC Core Wiki.pdf · p.1</span>
+    <span class="badges"><span class="badge question">Q2</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: No explicit comparison table with validated claims about Databricks/Snowflake security controls.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">for activity capture, enabling auditors or validators to independently confirm that the client was legitimately authorized at the time of the request.
+
+&lt;!-- EDIT-END: Q3 --&gt;
+
+
+&lt;!-- EDIT-START: Q3 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: Individual node operators can observe the content of the fr</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">Security Comparison Disclaimer
+
+The security characteristics described in this section reflect DDC's architecture as documented internally and should not be interpreted as independently verified assessments of third-party platforms. Specific claims regarding the security controls of named vendors such as Databricks or Snowflake have not been validated against current product documentation and may not accurately reflect those platforms' current capabilities. Readers should consult vendor documentation directly before drawing comparative conclusions.
+
+Regarding encryption, DDC does not enforce encryption at rest by default. Data stored within a cluster remains in plaintext unless the client application explicitly encrypts it prior to upload. Any documentation stating otherwise should be treated as inaccurate until corrected through a formal review cycle.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC150178/" target="_blank" class="source-badge">🌐 https://pmc.ncbi.nlm.nih.gov/articles/PMC150178/</a> <a href="https://www.nngroup.com/articles/comparison-tables/" target="_blank" class="source-badge">🌐 https://www.nngroup.com/articles/comparison-tables</a> <a href="https://dqops.com/docs/categories-of-data-quality-checks/how-to-reconcile-data-and-detect-differences/" target="_blank" class="source-badge">🌐 https://dqops.com/docs/categories-of-data-quality-</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#6</span> DDC Core Wiki.pdf · p.66</span>
+    <span class="badges"><span class="badge question">Q2</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: No published formal threat model document.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">fragmentation is intended to provide. Protocol-level Sybil resistance mechanisms are under active development and are not yet enforced automatically.
+
+&lt;!-- EDIT-END: Q2 --&gt;
+
+
+&lt;!-- EDIT-START: Q2 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: ** No published threat model or penetration test results. -</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">DDC's threat model addresses compromised storage nodes through client-side encryption, ensuring nodes never process plaintext data and keys are never transmitted to the storage layer. Data fragmentation across nodes provides additional isolation, though subject lineage relationships may indicate overlapping control between nodes, which can reduce the effective isolation this architecture is intended to provide. Protocol-level Sybil resistance mechanisms are under active development and are not yet automatically enforced, representing a residual risk that enterprise teams should account for when evaluating DDC deployments against their own security requirements.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://www.cere.network/hub/ddc" target="_blank" class="source-badge">🌐 https://www.cere.network/hub/ddc</a> <a href="https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9" target="_blank" class="source-badge">🌐 https://www.cere.network/blog/cere-network-s-road-</a> <a href="https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem" target="_blank" class="source-badge">🌐 https://www.newsfilecorp.com/release/114279/DeFine</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#7</span> DDC Core Wiki.pdf · p.1</span>
+    <span class="badges"><span class="badge question">Q2</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: Protocol-level Sybil resistance is absent, yet fragmentation is described as a security benefit.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">rifiable operator diversity should implement out-of-band vetting procedures until protocol-level Sybil mitigation is formally specified and delivered.
+
+&lt;!-- EDIT-START: Q2 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: Sybil resistance is described as a known gap but no timeline or specification exist</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">DDC clusters distribute data across multiple nodes as a baseline confidentiality measure; however, this fragmentation-based security model currently relies on deployment-level operator vetting rather than protocol-enforced guarantees. Cryptographic proof of distinct node identities and stake-weighted Sybil resistance mechanisms are not enforced by the DDC core protocol. A single adversarial operator controlling multiple nodes could undermine the confidentiality assumptions implied by fragmentation.
+
+Deployments requiring verifiable operator diversity should implement out-of-band vetting procedures to confirm independent node ownership and operation. Protocol-level Sybil mitigation is under active specification and will be formally documented upon delivery.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://www.cyfrin.io/blog/understanding-sybil-attacks-in-blockchain-and-smart-contracts" target="_blank" class="source-badge">🌐 https://www.cyfrin.io/blog/understanding-sybil-att</a> <a href="https://www.mdpi.com/1999-4893/16/1/34" target="_blank" class="source-badge">🌐 https://www.mdpi.com/1999-4893/16/1/34</a> <a href="https://www.cube.exchange/what-is/sybil-resistance" target="_blank" class="source-badge">🌐 https://www.cube.exchange/what-is/sybil-resistance</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#8</span> DDC Core Wiki.pdf · p.1</span>
+    <span class="badges"><span class="badge question">Q2</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: TLS is not enforced by default, which undermines security comparison claims.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">d weigh decentralized authorization guarantees against the maturity of compliance tooling currently available in traditional data warehouse offerings.
+
+&lt;!-- EDIT-END: Q2 --&gt;
+
+
+An autonomous edge cluster in DDC is a cluster capable of independently executing storage, routing, compute, and request-lev</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">Transport Layer Security (TLS) is not enforced by default across DDC storage and CDN nodes. As a result, data-in-transit confidentiality is not guaranteed unless TLS is explicitly configured for all node communications. Operators deploying DDC in security-sensitive environments should ensure TLS 1.2 or higher is enabled, as earlier versions lack modern protections and are considered insufficient for production use. Note that while DDC enforces cryptographic access control at the protocol level, this does not substitute for transport encryption and should not be interpreted as providing equivalent data-in-transit protection.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://www.cyberark.com/what-is/tls-certificate-risks/" target="_blank" class="source-badge">🌐 https://www.cyberark.com/what-is/tls-certificate-r</a> <a href="https://www.wolfssl.com/broken-ssl-tls-versions-attacks-weaknesses-and-mitigations/" target="_blank" class="source-badge">🌐 https://www.wolfssl.com/broken-ssl-tls-versions-at</a> <a href="https://www.ncsc.gov.uk/guidance/using-tls-to-protect-data" target="_blank" class="source-badge">🌐 https://www.ncsc.gov.uk/guidance/using-tls-to-prot</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#9</span> DDC Core Wiki.pdf · p.66</span>
+    <span class="badges"><span class="badge question">Q3</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The plaintext-by-default status is documented</div>
+    <div class="context-label">Original context</div>
+    <div class="context">rameters should follow the baseline requirements defined for standard DDC clusters unless a specific edge deployment profile is documented separately.
+
+&lt;!-- EDIT-END: Q1 --&gt;
+
+
+&lt;!-- EDIT-START: Q2 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: Nodes can authenticate the client even when customer inform</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">By default, DDC cluster configurations transmit and store data in plaintext. Operators deploying standard clusters should be aware that this default behavior affects any tooling in the data path, including version-control integrations, build pipelines, and automation gateways, all of which will process content as unencoded character data. Erasure coding and replication constraints apply equally to plaintext configurations; minimum node counts and erasure coding parameters must still satisfy the baseline requirements defined for standard DDC clusters unless a dedicated edge deployment profile has been explicitly documented and applied.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://plaintextconverter.com/what-is-plain-text-format-2/" target="_blank" class="source-badge">🌐 https://plaintextconverter.com/what-is-plain-text-</a> <a href="https://en.wikipedia.org/wiki/Plain_text" target="_blank" class="source-badge">🌐 https://en.wikipedia.org/wiki/Plain_text</a> <a href="https://news.ycombinator.com/item?id=5718286" target="_blank" class="source-badge">🌐 https://news.ycombinator.com/item?id=5718286</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#10</span> Encrypted Data Access and Key Delegation.pdf · p.0</span>
+    <span class="badges"><span class="badge question">Q2</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: Encryption is plaintext by default, yet several passages describe DDC as providing data confidentiality advantages over centralized stacks.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.
+
+&lt;!-- EDIT-START: Q2 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: The DEK is not held by any administrative interface --&gt;
+&lt;!-- SOURCES: [internal: DD</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">DDC does not encrypt data by default. Data passed to the DDC SDK is stored in plaintext unless the calling application encrypts it beforehand. Enterprise deployments requiring confidentiality must implement encryption at the application layer before submitting data to DDC. SDK-integrated encryption is not available in the current release and remains under consideration for a future version.
+
+Where DDC offers a confidentiality advantage over centralized stacks, that advantage is architectural: key custody remains with the data owner rather than a third-party provider. This distinction applies only when application-layer encryption is already in place.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://www.cere.network/hub/ddc" target="_blank" class="source-badge">🌐 https://www.cere.network/hub/ddc</a> <a href="https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9" target="_blank" class="source-badge">🌐 https://www.cere.network/blog/cere-network-s-road-</a> <a href="https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem" target="_blank" class="source-badge">🌐 https://www.newsfilecorp.com/release/114279/DeFine</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#11</span> Encrypted Data Access and Key Delegation.pdf · p.56</span>
+    <span class="badges"><span class="badge question">Q2</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The protocol accepts plaintext data uploads without rejection</div>
+    <div class="context-label">Original context</div>
+    <div class="context">our do not compromise the integrity of the broader system, preserving trustless data transfer guarantees for all participants.
+
+&lt;!-- EDIT-END: Q1 --&gt;
+
+---</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">DDC does not reject plaintext data uploads at the protocol level, but all data intended for restricted access should be encrypted by the client before upload. The protocol enforces access control through short-lived, client-signed credentials rather than through content inspection or rejection. Because leaked credentials are invalid without the originating client signature, the security boundary is maintained at the authentication layer. Access can be granted or revoked at varying levels of granularity, including per-collection or per-piece operations, giving data owners flexible control without relying on the protocol to filter unencrypted content.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: ADR Authentication and Authorization.pdf (14 pages)]</span> <a href="https://www.cere.network/hub/ddc" target="_blank" class="source-badge">🌐 https://www.cere.network/hub/ddc</a> <a href="https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9" target="_blank" class="source-badge">🌐 https://www.cere.network/blog/cere-network-s-road-</a> <a href="https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem" target="_blank" class="source-badge">🌐 https://www.newsfilecorp.com/release/114279/DeFine</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#12</span> Encrypted Data Access and Key Delegation.pdf · p.1</span>
+    <span class="badges"><span class="badge question">Q3</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The documents do not provide a single, consolidated step-by-step guide that walks a user from wallet creation through encrypted file upload in one sequence.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">nal: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md] | [external: https://www.cere.network/hub/ddc] --&gt;
+
+&lt;!-- EDIT-START: Q3 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: The documents do not describe a concrete key backup or recovery procedure. --&gt;
+&lt;!--</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">Secure Storage Quick Start
+
+To store encrypted data on DDC, complete the following steps in sequence. First, generate a wallet and fund it with a deposit to cover storage operations. Next, create a bucket to serve as the access-controlled container for your content. Before uploading, apply client-side encryption to your file. Finally, submit the encrypted file to your bucket via the SDK upload method.
+
+Access control is enforced at the node level, meaning only authorized requests are processed by CDN and storage nodes. Read access can be scoped to an entire bucket, a single piece, or a defined collection of pieces.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: ADR Authentication and Authorization.pdf (14 pages)]</span> <a href="https://sbk2.co/prepare-consolidated-financial-statements-example/" target="_blank" class="source-badge">🌐 https://sbk2.co/prepare-consolidated-financial-sta</a> <a href="https://clickhelp.com/clickhelp-technical-writing-blog/how-to-write-a-step-by-step-guide/" target="_blank" class="source-badge">🌐 https://clickhelp.com/clickhelp-technical-writing-</a> <a href="https://www.anaplan.com/blog/preparing-consolidated-financial-statements-step-by-step-guide/" target="_blank" class="source-badge">🌐 https://www.anaplan.com/blog/preparing-consolidate</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#13</span> Encrypted Data Access and Key Delegation.pdf · p.0</span>
+    <span class="badges"><span class="badge question">Q3</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The &quot;data wallet&quot; concept is defined repeatedly across multiple documents with slight variations, but no single canonical definition exists.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">round-trip confirmation times and per-transaction overhead cannot be absorbed into the access control path without degrading application performance.
+
+&lt;!-- EDIT-END: Q1 --&gt;
+
+
+&lt;!-- EDIT-START: Q3 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: ** Key loss and seed phrase loss consequences are mentioned</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">A data wallet is the sr25519 keypair that represents an identity within the DDC network. It consists of three components: a public key, which functions as the on-chain address; a private key, used to sign DDC operations; and a mnemonic seed phrase, used to recover the keypair if access is lost. The terms &quot;data wallet,&quot; &quot;account,&quot; and &quot;keypair&quot; are interchangeable and refer to the same underlying cryptographic identity. This definition is normative across all DDC SDK documentation and supersedes any informal or context-specific variations found elsewhere.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Client JS SDK Wiki.pdf (11 pages)]</span> <a href="https://www.quora.com/How-exactly-does-DataWallet-work" target="_blank" class="source-badge">🌐 https://www.quora.com/How-exactly-does-DataWallet-</a> <a href="https://forum.solidproject.org/t/is-data-wallet-the-new-name-for-a-pod-or-something-else/9460" target="_blank" class="source-badge">🌐 https://forum.solidproject.org/t/is-data-wallet-th</a> <a href="https://blog.zooxsmart.com/data-wallet-how-does-a-virtual-wallet-work" target="_blank" class="source-badge">🌐 https://blog.zooxsmart.com/data-wallet-how-does-a-</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#14</span> Encrypted Data Access and Key Delegation.pdf · p.1</span>
+    <span class="badges"><span class="badge question">Q3</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The documents do not describe what happens to the seed phrase during SDK initialization — specifically whether it is held in memory, discarded after key derivation, or persisted.</div>
+    <div class="context-label">Original context</div>
+    <div class="context">nal: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md] | [external: https://www.cere.network/hub/ddc] --&gt;
+
+&lt;!-- EDIT-START: Q3 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: The documents do not provide a single, consolidated step-by-step guide that walks a</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">Seed Phrase Handling
+
+When a seed phrase is provided to DdcClient.create(), the SDK derives the corresponding cryptographic key material from it. The seed phrase itself is not persisted to disk or transmitted externally. Security-conscious integrators should treat the seed phrase as sensitive in-process material for the duration of the initialization call and apply standard secure memory practices within their own runtime environment, such as avoiding logging the value and limiting its scope. Once key derivation is complete, retaining the seed phrase in application memory beyond that point is unnecessary and not recommended.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC from Sergey Poluyan.pdf (21 pages)]</span> <a href="https://strike.me/en/learn/what-is-a-seed-phrase/" target="_blank" class="source-badge">🌐 https://strike.me/en/learn/what-is-a-seed-phrase/</a> <a href="https://www.blockchain.com/learning-portal/lessons/seed-phrases-explained" target="_blank" class="source-badge">🌐 https://www.blockchain.com/learning-portal/lessons</a> <a href="https://secuxtech.com/blogs/blog/what-is-a-seed-phrase?srsltid=AfmBOopoHreEgOOA10NEIOv-TXnUanx6PJCIbYjvj0qX5TxpvllTXt6F" target="_blank" class="source-badge">🌐 https://secuxtech.com/blogs/blog/what-is-a-seed-ph</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#15</span> Encrypted Data Access and Key Delegation.pdf · p.0</span>
+    <span class="badges"><span class="badge question">Q3</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: A data wallet consists of a private key used to sign DDC operations</div>
+    <div class="context-label">Original context</div>
+    <div class="context">/is-data-wallet-the-new-name-for-a-pod-or-something-else/9460] | [external: https://blog.zooxsmart.com/data-wallet-how-does-a-virtual-wallet-work] --&gt;
+
+A data wallet is the sr25519 keypair that represents an identity within the DDC network. It consists of three components: a public key, which functi</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">A data wallet is an sr25519 cryptographic keypair that serves as your identity within the DDC network. It consists of a public key, a private key, and a derived address. The private key is used to sign DDC operations, authorizing actions such as storing and retrieving data on the cluster. The public key and address identify your wallet to other participants in the network. To interact with DDC, you must initialize a client instance with a data wallet, which the SDK accepts as a keypair object.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Client JS SDK Wiki.pdf (11 pages)]</span> <a href="https://www.cere.network/hub/ddc" target="_blank" class="source-badge">🌐 https://www.cere.network/hub/ddc</a> <a href="https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9" target="_blank" class="source-badge">🌐 https://www.cere.network/blog/cere-network-s-road-</a> <a href="https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem" target="_blank" class="source-badge">🌐 https://www.newsfilecorp.com/release/114279/DeFine</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#16</span> Encrypted Data Access and Key Delegation.pdf · p.0</span>
+    <span class="badges"><span class="badge question">Q3</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: A data wallet consists of a mnemonic seed phrase used to recover the keypair if access is lost</div>
+    <div class="context-label">Original context</div>
+    <div class="context">/is-data-wallet-the-new-name-for-a-pod-or-something-else/9460] | [external: https://blog.zooxsmart.com/data-wallet-how-does-a-virtual-wallet-work] --&gt;
+
+&lt;!-- EDIT-START: Q3 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: A data wallet consists of a private key used to sign DDC operations --&gt;
+&lt;!-- SOURCE</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">A data wallet is an sr25519 cryptographic keypair that serves as your identity within the DDC network. It consists of a public key, a private key, and a mnemonic seed phrase. The mnemonic seed phrase is a human-readable representation of the keypair and should be stored securely, as it is the only means of recovering access to your wallet if the original credentials are lost. Anyone who obtains the seed phrase can fully reconstruct the keypair and assume control of the associated wallet.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Client JS SDK Wiki.pdf (11 pages)]</span> <a href="https://www.cere.network/hub/ddc" target="_blank" class="source-badge">🌐 https://www.cere.network/hub/ddc</a> <a href="https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9" target="_blank" class="source-badge">🌐 https://www.cere.network/blog/cere-network-s-road-</a> <a href="https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem" target="_blank" class="source-badge">🌐 https://www.newsfilecorp.com/release/114279/DeFine</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#17</span> Encrypted Data Access and Key Delegation.pdf · p.0</span>
+    <span class="badges"><span class="badge question">Q3</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: The current state of DDC data storage is Plaintext</div>
+    <div class="context-label">Original context</div>
+    <div class="context">kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.
+
+&lt;!-- EDIT-START: Q2 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: Encryption is plaintext by default, yet several passages describe DDC as providing</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">DDC currently stores data in plaintext by default. Node operators running DDC Core software have direct visibility into the data fragments stored on their individual nodes. Enterprise deployments requiring confidentiality must implement encryption within their own application layer before passing data to the DDC SDK. SDK-integrated encryption is under consideration for a future release but is not available in the current implementation. Developers building privacy-sensitive applications are responsible for encrypting data prior to submission.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: DDC Core Wiki.pdf (66 pages)]</span> <a href="https://github.com/Cerebellum-Network/docs.cere.network" target="_blank" class="source-badge">🌐 https://github.com/Cerebellum-Network/docs.cere.ne</a> <a href="https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8" target="_blank" class="source-badge">🌐 https://cere-network.medium.com/cere-launches-the-</a> <a href="https://blog.polkastarter.com/get-to-know-cere-network/" target="_blank" class="source-badge">🌐 https://blog.polkastarter.com/get-to-know-cere-net</a> </div>
+  </div>
+</div>
+
+<div class="edit-card track-auto">
+  <div class="edit-header">
+    <span class="doc"><span class="num">#18</span> Encrypted Data Access and Key Delegation.pdf · p.0</span>
+    <span class="badges"><span class="badge question">Q3</span> <span class="badge auto">AUTO</span></span>
+  </div>
+  <div class="edit-body">
+    <div class="rationale">Gap: Data is transmitted in plaintext in DDC</div>
+    <div class="context-label">Original context</div>
+    <div class="context">are configured. Without these measures in place, DDC provides no confidentiality guarantees beyond those of a conventional centralized storage system.
+
+&lt;!-- EDIT-END: Q2 --&gt;
+
+
+&lt;!-- EDIT-START: Q2 | track: auto | ✅ AUTO-APPLIED --&gt;
+&lt;!-- GAP: The DEK is generated and held exclusively by the client --&gt;</div>
+    <div class="insertion-label">Applied edit</div>
+    <div class="insertion auto">Data in DDC is transmitted and stored in plaintext by default. To protect sensitive content, DDC supports encrypted data access and key delegation, enabling applications to enforce access control at the data layer without relying solely on network-level permissions. Developers handling private or subscription-gated content should apply encryption before writing data to a bucket, ensuring that even if bucket access is misconfigured or a grace period exposes stored objects, the underlying data remains unreadable to unauthorized parties.</div>
+    <div class="sources"><div class="sources-label">Sources</div><span class="source-badge">📄 [internal: ADR Authentication and Authorization.pdf (14 pages)]</span> <a href="https://github.com/Cerebellum-Network/docs.cere.network" target="_blank" class="source-badge">🌐 https://github.com/Cerebellum-Network/docs.cere.ne</a> <a href="https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8" target="_blank" class="source-badge">🌐 https://cere-network.medium.com/cere-launches-the-</a> <a href="https://blog.polkastarter.com/get-to-know-cere-network/" target="_blank" class="source-badge">🌐 https://blog.polkastarter.com/get-to-know-cere-net</a> </div>
+  </div>
+</div>
+
+<div class="footer">
+  DDC Documentation Evaluator · Three-track edit system<br>
+  Auto + flagged edits feed into next run. Use <code>reject_edit(index)</code> or <code>approve_manual_edit(index)</code> to manage.
+</div>
+</body></html>

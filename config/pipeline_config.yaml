@@ -1,0 +1,105 @@
+# Pipeline Configuration
+# Tune these parameters as you learn what works for your documents
+
+retrieval:
+  chunk_size: 1000        # tokens per chunk
+  chunk_overlap: 150      # token overlap between chunks
+  top_k: 12               # chunks to retrieve per question
+  embedding_model: "all-MiniLM-L6-v2"  # fast, good quality
+
+models:
+  # Answerer: Claude for conservative, citation-heavy answers
+  answerer:
+    provider: "anthropic"
+    model: "claude-opus-4-6"  # Stable Sonnet 4.5
+    max_tokens: 3200          # Sweet spot: enough for 40-55 claims with citations
+
+  # Evaluator: GPT-5.2 for independent critical assessment
+  evaluator:
+    provider: "openai"
+    model: "gpt-5.2"
+    max_completion_tokens: 4000
+
+  # Editor: Claude for targeted doc improvements
+  editor:
+    provider: "anthropic"
+    model: "claude-sonnet-4-6"
+    max_tokens: 2000
+
+  # Router: Kimi K2.5 Instant (lightweight classifier, no reasoning needed)
+  router:
+    provider: "kimi"
+    model: "kimi-k2.5"
+    max_tokens: 1000
+    base_url: "https://api.moonshot.ai/v1"
+    api_key_env: "KIMI_API_KEY"
+
+  # Claim Extractor: Uses answerer model
+  claim_extractor:
+    provider: "anthropic"
+    model: "claude-sonnet-4-6"
+    max_tokens: 4000
+
+  # Correlator: Needs larger context for comparison tables
+  correlator:
+    provider: "anthropic"
+    model: "claude-opus-4-6"
+    max_tokens: 4000
+
+pipeline:
+  max_improvement_iterations: 3
+  auto_merge_types:
+    - "grammar"
+    - "clarification"
+    - "examples"
+  human_review_types:
+    - "security_claims"
+    - "architecture_guarantees"
+    - "cryptographic_properties"
+    - "new_sections"
+
+# Loop B: Research-Augmented Comparison
+loop_b:
+  enabled: true
+
+  # Search configuration
+  search:
+    # Tavily: structured research search
+    tavily:
+      enabled: true
+      search_depth: "advanced"
+      max_results_per_query: 10
+    # OpenAI: built-in search via chat completions
+    openai:
+      enabled: true
+      model: "gpt-5.2"
+      max_results_per_query: 10
+
+  # Cross-validation settings
+  cross_validation:
+    require_cross_validation_for_security: true
+    min_sources_for_confirmed: 2
+    prefer_vendor_official: true
+
+  # Source authority ranking (lower = more authoritative)
+  source_authority:
+    vendor_official: 1
+    third_party_audit: 2
+    analyst_report: 3
+    community: 4
+    unknown: 5
+
+  # Platforms we know how to research
+  known_platforms:
+    databricks:
+      docs: ["docs.databricks.com", "databricks.com/trust"]
+      focus: ["encryption", "key management", "access control", "data governance"]
+    snowflake:
+      docs: ["docs.snowflake.com", "snowflake.com/en/data-cloud/overview/trust-center"]
+      focus: ["encryption", "key management", "data sharing", "governance"]
+    aws:
+      docs: ["docs.aws.amazon.com", "aws.amazon.com/security"]
+      focus: ["KMS", "IAM", "encryption at rest", "VPC", "shared responsibility"]
+    azure:
+      docs: ["learn.microsoft.com", "azure.microsoft.com/en-us/explore/security"]
+      focus: ["Key Vault", "RBAC", "encryption", "Purview", "shared responsibility"]

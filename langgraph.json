@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "docverify": "./docverify/graph.py:build_graph"
+  },
+  "env": ".env"
+}

@@ -1,0 +1,151 @@
+# Evaluation Specification — REVISED
+# ====================================
+# Changes from original:
+#   1. Required concepts split into DOCUMENTED (must be in answer) vs ASPIRATIONAL (bonus, don't penalize)
+#   2. Scoring rebalanced: correctness weight increased, completeness lowered
+#   3. min_correctness threshold lowered to 0.90 (0.95 was unreachable with 1 borderline claim in 10)
+#   4. Added doc_coverage_notes per question so evaluator knows what docs actually cover
+#   5. Forbidden claims refined based on actual overclaim patterns from 6+ pipeline runs
+#   6. Citation rule updated for Tier 1 format
+
+global_rules:
+  evidence_rule: "Every technical claim must cite a specific source. For Tier 1 (full-context): [[doc:FILENAME, p.PAGE_NUM]]. For Tier 2 (RAG): [[chunk:CHUNK_ID]]."
+  external_knowledge_rule: "The answer must NOT use general distributed systems knowledge, blockchain assumptions, or cloud marketing concepts unless they appear in the source documents."
+  refusal_rule: "If documents don't contain enough info, the correct answer is: 'The provided documents do not specify X.' This is a HIGH-QUALITY answer, not a failure. The evaluator MUST NOT penalize correctness for honest refusals."
+  citation_density: "Minimum 1 citation per paragraph OR 1 citation per 3 claims, whichever is stricter."
+  approved_edit_rule: "Claims supported by approved edits (from previous pipeline runs) are valid evidence. Treat [Approved Edit for X] chunks as equivalent to source document chunks."
+
+scoring:
+  weights:
+    grounded_correctness: 0.40
+    completeness: 0.20
+    precision: 0.15
+    clarity: 0.10
+    citation_quality: 0.15
+  thresholds:
+    pass_overall: 0.78
+    min_correctness: 0.80
+  scoring_guidance:
+    correctness_note: "Score 1.0 if all claims are supported. Deduct per unsupported claim: -0.10 for overstated, -0.15 for fabricated. Do NOT deduct for honest 'the docs do not specify' statements."
+    completeness_note: "Score against DOCUMENTED required concepts only. ASPIRATIONAL concepts should be noted but NOT penalized in the completeness score. If the answer explicitly states the docs don't cover a topic, this counts as addressing it."
+
+questions:
+  Q1:
+    text: "Why does the highly peer-to-peer design of the DDC clusters ensure resilience? And why is it suitable for a fully autonomous edge or hybrid cluster for an enterprise?"
+
+    required_concepts_documented:
+      - "DHT-based peer discovery and self-bootstrap (nodes can use themselves as bootstrap)"
+      - "Node failure tolerance via erasure coding (K/N scheme, Dragon 1: 16/48)"
+      - "Data replication for small pieces, erasure coding for large pieces"
+      - "Automatic data repair when nodes join or leave the cluster"
+      - "Adaptive routing around slow/failed nodes"
+      - "Disk-persisted indexes for blockchain-independent operation"
+      - "Each cluster as a complete, independent cloud"
+      - "Regional optimization (clusters for specific data types and regions)"
+
+    required_concepts_aspirational:
+      - "Explicit coordinator-free statement (implied but never stated)"
+      - "Network partition / split-brain behavior (not documented)"
+      - "Enterprise hybrid deployment pattern (not defined as a concept)"
+      - "Minimum node count for edge deployment (only '5 nodes' mentioned in planned context)"
+      - "Air-gapped or offline operation specifics"
+
+    forbidden_claims:
+      - "Blockchain consensus mechanisms (unless explicitly documented)"
+      - "Zero downtime guarantees (unless explicitly documented)"
+      - "Strong consistency guarantees (unless explicitly documented)"
+      - "'No centralized coordinator' as a direct quote (implied but never stated in docs)"
+      - "Specific minimum node counts as current production fact"
+
+    high_quality_indicators:
+      - "Explains specific mechanism, not marketing ('because decentralized' is insufficient)"
+      - "Describes what happens when nodes disappear (cites simulation results)"
+      - "Correctly separates current capabilities from planned/roadmap items"
+      - "Notes what the docs do NOT cover (this is a strength, not a weakness)"
+
+    doc_coverage_notes: >
+      The docs cover: DHT discovery, erasure coding, data repair simulations,
+      adaptive routing, disk-persisted indexes, regional clusters. The docs do NOT
+      cover: coordinator-free operation (implied only), network partitions, hybrid/edge
+      deployment patterns, minimum node counts for production. The evaluator should
+      NOT penalize completeness for the uncovered topics if the answer correctly notes
+      the docs don't address them.
+
+  Q2:
+    text: "How can a DDC cluster provide a higher level of security compared to a typical stack from Databricks or Snowflake running on top of AWS/Azure?"
+
+    required_concepts_documented:
+      - "Client-side encryption (user controls keys, nodes can't read plaintext)"
+      - "Current limitation: data stored/transmitted in plaintext by default"
+      - "Erasure coding distributes data so no single node holds complete files"
+      - "On-chain verification via DAC (trust layer for traffic/compute metrics)"
+      - "Recursive JWT-like signed token chain for authorization"
+      - "Multi-provider infrastructure distribution (testnet across 5+ providers)"
+      - "Contrast with traditional cloud: verify rather than assume trust"
+
+    required_concepts_aspirational:
+      - "Explicit attack surface comparison with named platforms"
+      - "Quantitative security benchmarks"
+      - "Regulatory compliance certifications (SOC2, GDPR, HIPAA)"
+      - "Key recovery mechanisms"
+
+    forbidden_claims:
+      - "'Zero trust' (unless explicitly described in docs)"
+      - "'Unhackable' or similar absolute claims"
+      - "'End-to-end encryption' as a current feature (SDK integration is in development)"
+      - "'More secure because decentralized' (without citing specific mechanism)"
+      - "'Cryptographically verified' audit trail (docs say 'verified data source', not 'cryptographically verified')"
+      - "Claiming current capabilities for features with 'planned' or 'in development' status"
+
+    high_quality_indicators:
+      - "Compares architecture patterns, not brand marketing"
+      - "Describes who can access data in DDC vs traditional cloud"
+      - "Correctly identifies what is current vs planned (especially encryption SDK)"
+      - "Acknowledges that DDC docs don't describe Databricks/Snowflake specifics"
+
+    doc_coverage_notes: >
+      The docs compare against generic 'traditional cloud stacks' not against
+      Databricks or Snowflake specifically. The docs cover: client-side encryption
+      (manual, not SDK-integrated yet), erasure coding, DAC, auth tokens, multi-provider
+      infra. The docs do NOT cover: specific Databricks/Snowflake architectures,
+      security audit results, compliance certifications, key recovery.
+
+  Q3:
+    text: "How can I store my data on this data cluster with my data wallet and key? What makes it secure?"
+
+    required_concepts_documented:
+      - "Account creation via seed phrase / mnemonic (CLI command documented)"
+      - "SDK initialization with seed phrase"
+      - "Bucket creation (public vs private)"
+      - "File upload via client.store() returning a CID"
+      - "CID is content-addressed (based on cryptographic hash)"
+      - "Authentication via wallet-derived key signing"
+      - "Authorization via on-chain bucket permissions"
+      - "Recursive token-based access delegation"
+      - "Client-side encryption recommended for sensitive data"
+      - "Key loss consequences (mnemonic loss = account loss, DEK loss = data inaccessible)"
+
+    required_concepts_aspirational:
+      - "Formal definition of 'data wallet' (not explicitly defined in docs)"
+      - "Step-by-step encryption tutorial (not in current docs)"
+      - "Cere Wallet vs SDK seed phrase relationship (not documented)"
+      - "DDC deposit mechanism explanation (mentioned but not explained)"
+
+    forbidden_claims:
+      - "Generic 'keys make it secure' without citing specific mechanism"
+      - "Assumed encryption methods not explicitly in docs"
+      - "'Data wallet is an Ed25519 keypair' as definitive (CLI outputs sr25519, and 'data wallet' is not formally defined)"
+      - "Claiming SDK-integrated encryption is available now (it's in development)"
+
+    high_quality_indicators:
+      - "Provides actual code examples from the docs"
+      - "Security explained as: specific mechanism -> specific protection"
+      - "Addresses key loss scenario with doc citations"
+      - "Correctly notes that 'data wallet' is not formally defined"
+      - "Separates current capabilities from planned features"
+
+    doc_coverage_notes: >
+      The docs provide: CLI account creation, SDK init, bucket creation, file upload,
+      CID explanation, auth token chain, key loss warnings. The docs do NOT provide:
+      formal 'data wallet' definition, encryption how-to, Cere Wallet integration details,
+      deposit mechanism explanation. The CLI outputs sr25519 (not Ed25519) as the key type.

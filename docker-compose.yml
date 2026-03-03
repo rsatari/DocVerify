@@ -1,0 +1,60 @@
+
+services:
+  # ─── DocVerify API Server ───────────────────────────
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./docs/pdfs:/app/docs/pdfs          # PDF uploads persist
+      - ./knowledge:/app/knowledge           # Edited MDs, ChromaDB, caches
+      - ./reports:/app/reports               # Generated reports
+      - ./config:/app/config                 # pipeline_config.yaml
+      - ./evaluation:/app/evaluation         # evaluation_spec.yaml
+    depends_on:
+      - db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── PostgreSQL (persistent state) ──────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: docverify
+      POSTGRES_USER: docverify
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-docverify_dev_2024}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  # ─── Redis (task queue for background jobs) ─────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # ─── Aegra Agent Server (LangGraph Platform alt) ────
+  # Uncomment when ready to use Aegra for LangGraph serving:
+  #
+  # aegra:
+  #   build: .
+  #   command: aegra serve
+  #   ports:
+  #     - "8001:8000"
+  #   env_file: .env
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   environment:
+  #     - DATABASE_URL=postgresql://docverify:${DB_PASSWORD:-docverify_dev_2024}@db:5432/docverify
+
+volumes:
+  pgdata:

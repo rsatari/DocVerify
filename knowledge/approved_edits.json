@@ -1,0 +1,1997 @@
+[
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "is bound to the client's key pair and the specific request payload, it cannot be forged or replayed by an unauthorized party.\n\n<!-- EDIT-END: Q3 -->\n\n---",
+    "new_text": "Each authenticated client request to a DDC storage node must include a signature that authorizes access to the requested content. The signature is constructed using the sr25519 signing algorithm over a concatenated byte sequence comprising the request identifier, bucket identifier, timestamp, and the user's public key, expressed as signatureBytes = sr25519(requestId + bucketId + timestamp + userPublicKey). This construction ensures that requests cannot be forged, as the signature cryptographically proves both the identity of the client and their right to access the specified bucket at the given point in time.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: The signature construction is signatureBytes = sr25519($requestId$bucketId$timestamp$userPublicKey)",
+    "implication": "Claim cited DDC Core Wiki.pdf p.11 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:18:07.356429",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "stinguish direct client requests from those proxied by CDN nodes, enabling accurate activity capture and authorization enforcement across the cluster.\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The signature is computed using sr25519 over concatenated fields: signatureBytes =",
+    "new_text": "The signature field in an authenticated DDC request is encoded using Base58 representation of the raw signature bytes, expressed as signature = base58(signatureBytes). This encoding is consistent with the broader DDC authentication model, in which client requests carry metadata and signatures that authorize access to content. The encoded signature serves as cryptographic proof that the request originated from a legitimate client, ensuring that no party can forge or replay a valid request without possession of the corresponding private key credentials.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: The signature is encoded as signature = base58(signatureBytes)",
+    "implication": "Claim cited DDC Core Wiki.pdf p.11 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:18:07.356429",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "is stored and transmitted in plaintext. Storage nodes and network\nintermediaries can read user data.\n[ADR] Encrypted Data Access and Key Delegation 2\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: After bucket creation, the wallet that created the bucket becomes the bucket owner",
+    "new_text": "When a bucket is successfully created on DDC, the submitting wallet address is automatically assigned as the bucket owner. The bucket owner holds root access to that bucket, meaning they retain full administrative control over its contents and access policies. This ownership is derived deterministically from the wallet address used to sign the creation transaction. Protecting the private key associated with the owner wallet is therefore critical, as compromise of that key constitutes full compromise of the bucket and any data stored within it.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://docs.datahaven.xyz/store-and-retrieve-data/use-storagehub-sdk/create-a-bucket/]",
+      "[external: https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html]",
+      "[external: https://medium.com/@csjcode/how-hackers-stole-1-5-billion-crypto-in-an-aws-s3-bucket-exploit-f0a0ce39ccd0]"
+    ],
+    "rationale": "Gap: After bucket creation, the wallet that created bucket becomes a bucket owner that has root access",
+    "implication": "Claim cited ADR Authentication and Authorization.pdf p.7 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:18:07.356429",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "storage methods before writing data to any DDC cluster. Treat these credentials with the same criticality as private keys controlling on-chain assets.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not provide a unified, step-by-step guide",
+    "new_text": "Encryption key delegation in DDC is not currently supported. Access control to encrypted data is managed at the node level, where a client's permissions are determined by their relationship to a given entry point in the data graph. Using the DAG API, data can be structured hierarchically and accessed by path, enabling parent-child node relationships similar to shared folder access. Authorized clients can traverse this structure based on their access to a parent node, but cryptographic key delegation to third parties remains outside the scope of the current implementation.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://republic.com/cere]",
+      "[external: https://github.com/Cerebellum-Network/docs.cere.network]",
+      "[external: https://www.cere.network/blog/cere-partnerships-overview-c1862]"
+    ],
+    "rationale": "Gap: There is no encryption key delegation currently",
+    "implication": "Claim cited Encrypted Data Access and Key Delegation.pdf p.6 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:18:07.356429",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q1",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "ographically proves both the identity of the client and their right to access the specified bucket at the given point in time.\n\n<!-- EDIT-END: Q3 -->\n\n---",
+    "new_text": "DDC's storage protocol is designed to tolerate a broad range of failure conditions, including both expected and unexpected node shutdowns as well as arbitrary node misbehaviour. Through mechanisms such as erasure coding, client data remains accessible even when one or more nodes leave the network. The protocol enforces a guaranteed level of durability, for example 99.99999%, ensuring that data integrity and availability are maintained across the cluster regardless of individual node failures or malicious activity.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: DDC tolerates any misbehaviour",
+    "implication": "Claim cited DDC Core Wiki.pdf p.38 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:18:07.356429",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q1",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "df] | [external: https://www.cere.network/hub/ddc] | [external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9] -->\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The authentication gater uses bucket and customer indexes persisted on disk -->\n<!-",
+    "new_text": "The authentication gater maintains bucket and customer indexes that are persisted on disk, enabling efficient lookup and validation of access rights without requiring repeated on-chain queries. These indexes are loaded at node startup and updated as new buckets are created or customer permissions change, ensuring the gater operates with current state while minimizing latency during request handling.\n\nBy storing these indexes locally, DDC nodes can authenticate incoming requests against bucket ownership and customer entitlements in a performant manner. This approach supports the broader DDC security model, where smart contracts define permissions and node-level components enforce them at the data access layer.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: The authentication gater was migrated to use bucket and customer indexes persisted on disk",
+    "implication": "Claim cited DDC Core Wiki.pdf p.34 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:18:07.356429",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q1",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "is stored and transmitted in plaintext. Storage nodes and network\nintermediaries can read user data.\n[ADR] Encrypted Data Access and Key Delegation 2\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: After bucket creation, the wallet that created bucket becomes a bucket owner that h",
+    "new_text": "The SDK authenticates all operations by signing requests with a user key derived from a seed or wallet. Blockchain transactions are signed and sent to the chain endpoint, while storage and compute requests to DDC nodes are signed by the same identity and verified at the node level. This unified signing model ensures that a single user identity governs both on-chain and off-chain interactions, eliminating the need for separate credential management across the decentralized infrastructure.",
+    "citations": [
+      "[internal: DDC Client JS SDK Wiki.pdf (11 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/hub/blockchain-protocol]",
+      "[external: https://republic.com/cere]"
+    ],
+    "rationale": "Gap: Blockchain transactions are signed and sent to the chain endpoint",
+    "implication": "Claim cited DDC Client JS SDK Wiki.pdf p.4 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:18:07.356429",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Client JS SDK Wiki.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "Directed Acyclic Graph stored on DDC is used to establish data\nrelationships between different pieces of data.\nDDC Client JS SDK Wiki @Ulad Palinski 1\n\n<!-- EDIT-START: Q3 | track: flagged | \ud83d\udfe1 FLAGGED (spot-check recommended) -->\n<!-- GAP: ** The DDC deposit requirement is stated in SDK code comment",
+    "new_text": "Before initializing a DDC client instance, the account you intend to use must meet two funding requirements: a positive CERE token balance to cover transaction fees, and a DDC-specific deposit held against your account. The DDC deposit is separate from your general token balance and must be funded prior to creating a client instance. Accounts that do not satisfy both conditions will fail during initialization without returning a descriptive error. Ensure both requirements are met before proceeding to the client configuration steps below.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: The DDC deposit requirement is stated in code comments (\"The account used to create the instance should have positive balance and DDC deposit\" [[doc:DDC Client JS SDK Wiki.pdf, p.5]]) but not as a formal prerequisite in the Get Started guide.",
+    "implication": "New users following the Get Started guide may skip the deposit step and encounter unexplained failures.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:18:07.356429",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "ucture. The signature verification step is a core component of DDC's authorization flow, enforced at the node level before any data access is granted.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The signature format is signatureBytes = sr25519($requestId",
+    "new_text": "DDC enforces data security through client-side key custody, request signing, and node-level signature verification prior to any data access. The following categories provide a basis for comparing DDC controls against equivalent capabilities in centralized data platforms: encryption at rest, where DDC encrypts data before it leaves the client; key management, where private keys remain exclusively under client control and are never transmitted to or stored by cluster nodes; access auditing, where signed request verification creates a tamper-evident authorization record at the node layer; and compliance certification, which remains an independent evaluation responsibility for each deploying organization.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: ** No explicit comparison of DDC's security guarantees with specific security controls offered by Databricks/Snowflake.",
+    "implication": "** The documents suggest DDC's client-side key custody model is superior, but enterprise evaluators cannot make a like-for-like comparison without knowing what specific controls the comparison targets.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "rnal: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html] | [external: https://www.cloudquery.io/blog/aws-kms-key-grants-deep-dive] -->\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The DEK is generated and held exclusively by the client -->\n<!-- SOURCES: [internal",
+    "new_text": "Data confidentiality in DDC is not automatic. By default, data is transmitted in plaintext between clients and storage nodes, and TLS is not enforced on client-to-node connections. The architectural claim that DDC removes the platform operator as a trusted intermediary in the confidentiality model is only realized when client-side encryption is explicitly implemented by the application developer. Production deployments must independently confirm that both TLS enforcement and SDK-level encryption are configured. Without these measures in place, DDC provides no confidentiality guarantees beyond those of a conventional centralized storage system.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: ** The documents state data is plaintext by default while also claiming DDC \"removes the platform operator as a trusted intermediary in the data confidentiality model.\" These statements are contradictory when encryption is not the default.",
+    "implication": "** Readers may interpret the confidentiality advantage as automatic rather than opt-in.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "is stored and transmitted in plaintext. Storage nodes and network\nintermediaries can read user data.\n[ADR] Encrypted Data Access and Key Delegation 2\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Blockchain transactions are signed and sent to the chain endpoint -->\n<!-- SOURCES:",
+    "new_text": "DDC does not currently enforce TLS on client-to-node connections by default. Data is transmitted in plaintext between clients and storage nodes, and production deployments should confirm that TLS is enforced independently of any SDK-level encryption controls. Operators running storage nodes or CDN nodes within a cluster are responsible for validating that transport layer security is applied at the infrastructure level. Applications handling sensitive data should not rely solely on DDC defaults and must independently verify that encrypted transport is configured before moving workloads to production.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://blog.polkastarter.com/get-to-know-cere-network/]",
+      "[external: https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8]"
+    ],
+    "rationale": "Gap: Data is stored and transmitted in plaintext in DDC",
+    "implication": "Claim cited Encrypted Data Access and Key Delegation.pdf p.2 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "ponsible for encrypting data client-side before writing to DDC, ensuring that stored content remains protected independent of bucket permission state.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The term \"data wallet\" is never formally defined in any doc",
+    "new_text": "Step 7: Encrypt Before Upload\n\nDDC storage does not enforce confidentiality at the infrastructure level, so applications handling sensitive data must encrypt content client-side before calling client.store(). Generate a 256-bit data encryption key using crypto.getRandomValues, then encrypt the payload with AES-256-GCM before passing the resulting ciphertext as the upload body. The following pattern applies regardless of bucket permission configuration, ensuring stored content remains protected independent of access control state.\n\nconst dek = crypto.getRandomValues(new Uint8Array(32));\nconst iv = crypto.getRandomValues(new Uint8Array(12));\nconst key = await crypto.subtle.importKey(\"raw\", dek, \"AES-GCM\", false, [\"encrypt\"]);\nconst ciphertext = await crypto.subtle.encrypt({ name: \"AES-GCM\", iv }, key, plaintext);\nawait client.store(bucketId, new Uint8Array(ciphertext));",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://github.com/Cerebellum-Network/docs.cere.network]",
+      "[external: https://cere-network.medium.com/ceres-decentralized-data-cloud-to-be-used-by-credefi-in-collaboration-with-big-three-global-credit-39d38f49d3c6]",
+      "[external: https://republic.com/cere]"
+    ],
+    "rationale": "Gap: ** No explicit end-to-end tutorial for encrypting data before upload using the current SDK.",
+    "implication": "** The docs state encryption is \"available manually\" but do not walk through the exact code path using `@cere-ddc-sdk/ddc-client` to encrypt before calling `client.store()`.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "# Encrypted Data Access and Key Delegation\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents state \"SDK-integrated key management with delegated access grants is",
+    "new_text": "Key Backup Best Practices\n\nBecause DDC encrypts data client-side before submission to cluster nodes, the plaintext content and its Data Encryption Key (DEK) are never recoverable from the network itself. Loss of a DEK or its associated seed phrase results in permanent, irreversible inaccessibility of the encrypted data. Store all seed phrases and DEKs offline in at least two physically separate locations, such as printed paper copies in secure storage or hardware security devices kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: ** Key loss and seed phrase loss consequences are mentioned but no backup strategy guidance is provided.",
+    "implication": "** Documents state \"loss of a DEK results in permanent inaccessibility\" [[doc:DDC Core Wiki.pdf, p.1]] and the seed phrase \"cannot be recovered from the network if lost\" [[doc:DDC Core Wiki.pdf, p.9]], but no recommended backup procedures are described.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "ata integrity and availability are maintained across the cluster regardless of individual node failures or malicious activity.\n\n<!-- EDIT-END: Q1 -->\n\n---",
+    "new_text": "The mnemonic generated during account creation is the sole means of recovering access to a DDC wallet. It is never transmitted to or stored on the network, meaning no recovery mechanism exists outside of the phrase itself. If the mnemonic is lost, access to the account and all associated assets is permanently unrecoverable. When creating an account using the CLI command npx @cere-ddc-sdk/cli account --random, the output mnemonic must be recorded and stored securely before proceeding. Anyone who obtains this phrase gains full control of the account.",
+    "citations": [
+      "[internal: Get Started with DDC.pdf (9 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: The mnemonic cannot be recovered from the network if lost",
+    "implication": "Claim cited DDC Core Wiki.pdf p.9 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "ciated with the owner wallet is therefore critical, as compromise of that key constitutes full compromise of the bucket and any data stored within it.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: After bucket creation, the wallet that created the bucket b",
+    "new_text": "When a bucket is created in DDC, the owner is automatically granted root access to that bucket. This root access allows the owner to perform all operations on the bucket, including read, write, and delete, as well as delegate access permissions to other parties. The owner can grant scoped access to additional users, restricting or extending their permissions as needed. For example, a bucket owner may share access with multiple users, enabling each to upload or download data while the owner retains ultimate control over the bucket's access policies.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://republic.com/cere]",
+      "[external: https://github.com/Cerebellum-Network/docs.cere.network]",
+      "[external: https://www.cere.network/blog/cere-partnerships-overview-c1862]"
+    ],
+    "rationale": "Gap: The bucket owner is automatically granted root access to that bucket",
+    "implication": "Claim cited Encrypted Data Access and Key Delegation.pdf p.3 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "stinguish direct client requests from those proxied by CDN nodes, enabling accurate activity capture and authorization enforcement across the cluster.\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The signature is encoded as signature = base58(signatureBytes) -->\n<!-- SOURCES: [i",
+    "new_text": "When constructing an authenticated request to a DDC node, the client produces a signature over a concatenated set of fields: the requestId, bucketId, timestamp, and userPublicKey. This signature is computed using the sr25519 signing scheme. The resulting signed payload allows DDC nodes to verify that a request originates from a legitimate client, confirm the client holds access rights to the specified bucket, and ensure the request cannot be forged or replayed. Requests that cannot be verified against these fields are rejected, distinguishing authenticated client requests from other traffic such as requests proxied through CDN nodes.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: The signature is computed using sr25519 over concatenated fields: requestId, bucketId, timestamp, and userPublicKey",
+    "implication": "Claim cited DDC Core Wiki.pdf p.11 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q1",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "onic must be recorded and stored securely before proceeding. Anyone who obtains this phrase gains full control of the account.\n\n<!-- EDIT-END: Q3 -->\n\n---",
+    "new_text": "The DDC storage protocol is designed to tolerate node misbehaviour through its authorization framework, which governs all read and write requests to storage and CDN nodes. Requests must originate from the bucket owner or a party to whom the owner has explicitly granted access, ensuring that unauthorized actors cannot manipulate or corrupt stored data. This access control layer operates across the cluster such that individual node failures or malicious behaviour do not compromise the integrity of the broader system, preserving trustless data transfer guarantees for all participants.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: The storage protocol tolerates any misbehaviour",
+    "implication": "Claim cited DDC Core Wiki.pdf p.38 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "payload within the shared URL, allowing nodes to verify authenticity without requiring a prior cache lookup of customer data.\n\n<!-- EDIT-END: Q2 -->\n\n---",
+    "new_text": "Before trusting a DDC cluster with sensitive data, operators should be manually verified for independence by inspecting the cluster's node registry on-chain and confirming that node operators correspond to distinct controlling accounts with no shared issuers in their authentication token chains. Because DDC's trust chain model derives authority from token issuers at the pallet level, a cluster where multiple nodes share a common issuer or subject lineage may indicate overlapping control, reducing the effective isolation that data fragmentation is intended to provide. Protocol-level Sybil resistance mechanisms are under active development and are not yet enforced automatically.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: ** No guidance on how to verify operator diversity across a DDC cluster before trusting it with sensitive data.",
+    "implication": "** The security advantage of data fragmentation is contingent on operator independence, but no verification mechanism is documented.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "ed to provide. Protocol-level Sybil resistance mechanisms are under active development and are not yet enforced automatically.\n\n<!-- EDIT-END: Q2 -->\n\n---",
+    "new_text": "DDC's threat model addresses compromised storage nodes through client-side encryption, ensuring nodes never process plaintext data, and keys are never transmitted unencrypted. Additional threat mitigations covering Sybil resistance, TLS layer guarantees, and on-chain access grant management are under active development, with storage node blockchain query integration and migration tooling listed as pending implementation. A formal published threat model document consolidating current mitigations, known residual risks, and remediation timelines is not yet available. Enterprise teams requiring independent security assessment should contact Cere Network directly for current security posture documentation pending public disclosure.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: ** No published threat model or penetration test results.",
+    "implication": "** Enterprise teams cannot independently assess DDC's real-world attack surface compared to audited alternatives.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "[external: https://tago.io/blog/iot-edge-cluster-increasing-reliability] | [external: https://thingsboard.io/docs/edge/config/edge-cluster-setup/] -->\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not state whether DDC enforces TLS for transport encryption betwee",
+    "new_text": "Client-side encryption in DDC depends entirely on correct implementation within the application layer. If an application has a bug or fails to encrypt certain records before writing to DDC, those payloads are stored as plaintext on cluster nodes with no automatic rejection or validation at the protocol level. Operators and auditors should periodically inspect node-stored payloads directly to verify that content is not readable as plaintext. Where client-side encryption cannot be guaranteed, applications should fall back to server-side encryption using the same DEK derivation process to ensure no unencrypted data reaches the cluster.",
+    "citations": [
+      "[internal: DDC from Sergey Poluyan.pdf (21 pages)]",
+      "[external: https://www.gate.com/learn/articles/what-is-cere-network-all-you-need-to-know-about-cere/3289]",
+      "[external: https://www.cere.network/hub/how-video-encryption-decryption-works]",
+      "[external: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md]"
+    ],
+    "rationale": "Gap: ** The documents do not describe what happens to data confidentiality if the application implementing client-side encryption has a bug or fails to encrypt certain records.",
+    "implication": "** The entire confidentiality model depends on correct client implementation, but no validation mechanism is described.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "security assessment should contact Cere Network directly for current security posture documentation pending public disclosure.\n\n<!-- EDIT-END: Q2 -->\n\n---",
+    "new_text": "DDC nodes authenticate incoming requests by verifying cryptographic signatures tied to the requesting identity. When a client submits a storage or compute request, the SDK signs it using a key derived from the user's wallet or seed material. The node receives only the signed request and the declared identity, validating the signature without any exposure to the underlying seed. Authorization is then enforced according to bucket-level permissions, which are defined on-chain as either public or private, ensuring that access control decisions are grounded in verifiable blockchain state rather than client-supplied claims.",
+    "citations": [
+      "[internal: DDC Client JS SDK Wiki.pdf (11 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: DDC nodes verify the cryptographic signature against the declared identity without ever having access to the underlying seed material",
+    "implication": "Claim cited DDC Core Wiki.pdf p.8 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "f94] | [external: https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem] -->\n\nDDC Core is the foundational software suite powering DDC nodes within the Cere Network. It serves as the integrated engine for decentralized storage",
+    "new_text": "DDC nodes are designed to continue serving storage and compute requests even when the blockchain is temporarily unavailable. Because authorization state and bucket permissions are enforced at the node level using signed requests verified against user identity, nodes can authenticate and process operations independently of live chain connectivity. The blockchain functions as an immutable record for validation results and cluster coordination, but this role is decoupled from the data path. This separation ensures that transient blockchain outages do not interrupt active data operations within the cluster.",
+    "citations": [
+      "[internal: DDC Client JS SDK Wiki.pdf (11 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/hub/blockchain-protocol]",
+      "[external: https://republic.com/cere]"
+    ],
+    "rationale": "Gap: DDC nodes can continue operation even when the blockchain is temporarily unavailable",
+    "implication": "Claim cited DDC Core Wiki.pdf p.33 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "gies, access control and data permissions are enforced through owner-defined policies, with no infrastructure operator granted unilateral data access.\n\n<!-- EDIT-END: Q1 -->\n\n\n<!-- EDIT-END: Q2 -->\n\n\n<!-- EDIT-START: Q2 | track: flagged | \ud83d\udfe1 FLAGGED (spot-check recommended) -->\n<!-- GAP: The Encrypte",
+    "new_text": "DDC edge clusters require a strict majority quorum to remain operational. For a 5-node cluster, at least 3 nodes must be available to satisfy both read and write quorum. A 7-node cluster requires 4 nodes, and a 10-node cluster requires 6 nodes. Write operations enforce quorum at all times to preserve consistency; read operations apply the same threshold to guarantee that returned data reflects the latest acknowledged write. Clusters that fall below these thresholds suspend operations to prevent split-brain conditions, consistent with Byzantine fault tolerance principles underlying DDC quorum design.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://docs.apigee.com/private-cloud/v4.18.05/about-cassandra-replication-factor-and-consistency-level]",
+      "[external: https://www.rabbitmq.com/docs/quorum-queues]",
+      "[external: https://learn.microsoft.com/en-us/windows-server/storage/storage-spaces/quorum]"
+    ],
+    "rationale": "Gap: The documents do not define a minimum quorum formula for edge clusters (e.g., how many of 5 nodes must be available for reads vs. writes).",
+    "implication": "The docs state a \"minimum of five nodes is recommended\" and discuss BFT quorum loss, but never specify the exact threshold (e.g., 3-of-5).",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "[external: https://tago.io/blog/iot-edge-cluster-increasing-reliability] | [external: https://thingsboard.io/docs/edge/config/edge-cluster-setup/] -->\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: ** The documents do not describe what happens to data confidentiality if the applic",
+    "new_text": "DDC clusters distribute data across peer-to-peer nodes, eliminating the single points of failure inherent in centralized storage architectures. Edge and hybrid cluster configurations target 99.9% or higher availability by ensuring no individual node represents a critical dependency; workloads are automatically redistributed when a node becomes unreachable. This contrasts with centralized alternatives, where a provider outage or infrastructure failure can render data inaccessible until recovery is complete. By design, DDC's decentralized topology reduces mean time to recovery at the cluster level, as redundant peers continue serving requests without requiring operator intervention or scheduled maintenance windows.",
+    "citations": [
+      "[external: https://www.cere.network/blog/decentralized-data-governance-for-enterprises-2e755]",
+      "[external: https://republic.com/cere]",
+      "[external: https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8]"
+    ],
+    "rationale": "Gap: The documents do not explicitly quantify how peer-to-peer design improves resilience compared to centralized alternatives, beyond eliminating single points of failure.",
+    "implication": "The architecture description implies superior resilience, but no comparative metrics (e.g., mean time to recovery, availability percentage) are provided.",
+    "verification_status": "confirmed",
+    "track": "flagged",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "[external: https://tago.io/blog/iot-edge-cluster-increasing-reliability] | [external: https://thingsboard.io/docs/edge/config/edge-cluster-setup/] -->\n\n<!-- EDIT-START: Q1 | track: flagged | \ud83d\udfe1 FLAGGED (spot-check recommended) -->\n<!-- GAP: The documents do not explicitly quantify how peer-to-peer de",
+    "new_text": "When a network partition separates edge-local node groups from broader regional participants in a hybrid cluster, DDC applies availability-favoring behavior consistent with CAP theorem trade-offs: edge nodes continue serving local client operations independently rather than blocking on cross-partition consensus. Once connectivity is restored, the cluster reconciles divergent state through its replication protocol. To reduce split-brain exposure, hybrid cluster deployments should provision redundant communication links between edge and regional node groups, ensuring that transient failures do not trigger unnecessary partition handling and that full cluster coordination resumes with minimal data inconsistency upon reconnection.",
+    "citations": [
+      "[internal: DDC from Sergey Poluyan.pdf (21 pages)]",
+      "[external: https://www.rabbitmq.com/docs/partitions]",
+      "[external: http://universalaccess.mit.edu/paper-repo/Olamide_s_MIT_Thesis_Final.pdf]",
+      "[external: https://www.geeksforgeeks.org/computer-networks/handling-network-partitions-in-distributed-systems/]"
+    ],
+    "rationale": "Gap: The documents do not describe how hybrid clusters handle network partitions between edge and regional node groups.",
+    "implication": "Hybrid clusters are described as \"combining edge-local node groups with broader network participation\" but split-brain scenarios are not addressed.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 23,
+    "edit_type": "insertion",
+    "original_context": "Palinski\nScenario\nAdd new node to the cluster, check that part of metadata was\ndistributed according to the new topology (use Storage\nDDC Core Wiki 23\n\n---\n\n<!-- PAGE 24 -->\n## Page 24\n\ndashboard to check amount of metadata stored on the new\nnode).\nUpload new data to the cluster, check that new node",
+    "new_text": "DDC edge cluster data repair performance is dependent on cluster size, available bandwidth, and the number of pieces requiring reconstruction. As a reference point, full infrastructure deployments have completed repair of approximately 600,000 pieces in around 20 hours under representative conditions. For 5-node edge cluster deployments operating under constrained bandwidth, repair times will vary significantly from this baseline. Enterprise operators defining recovery point objectives should account for these variables when establishing SLA targets, and are advised to conduct repair benchmarking under their specific network conditions until standardized edge cluster SLA targets are published.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: The data repair process for edge clusters lacks documented SLA targets (the only benchmark is \"approximately 20 hours\" for 600K pieces on full infrastructure [[doc:DDC Core Wiki.pdf, p.22]]).",
+    "implication": "Enterprise operators cannot set recovery point objectives without this data.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "within a cluster. It manages data persistence and retrieval while\nmaintaining strict data sovereignty.\n\u0000ADR\u0000 Global Agent Registry.md\nDDC Core Wiki 1\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The node checks bucket balance before processing the request -->\n<!-- SOURCES: [int",
+    "new_text": "Each node in a DDC cluster retains only a portion of the complete dataset rather than a full replica. DDC Core functions as an isolated software instance that enables a node to join a cluster and collaborate with peer nodes, meaning the operator of any individual node has direct visibility into only the data fragments stored locally on that node. This partial storage model is an inherent property of the distributed architecture, and full dataset reconstruction requires coordination across the cluster rather than access to any single node.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: Each node retains only a portion of the complete dataset",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "including key delegation, operate at the application layer and are the appropriate mechanism for restricting content visibility to cluster operators.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The Cere Blockchain serves as an immutable foundation for D",
+    "new_text": "DDC clusters maintain continuous request routing even when individual nodes become unavailable. As storage nodes go offline, the cluster automatically redirects client requests to remaining active nodes, ensuring uninterrupted data access. This behavior is supported by erasure coding, which splits data into encoded chunks distributed across multiple storage nodes. Because the underlying content is recoverable from a subset of those chunks, the failure of any single node does not prevent the cluster from fulfilling read or write operations, and clients experience no interruption during node-level failures.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: When individual nodes are taken offline, request routing continues through remaining active nodes without interruption to the client",
+    "implication": "Claim cited DDC Core Wiki.pdf p.18 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "single node holds a complete copy of a given file and that data retrieval depends on coordinated access across the participating nodes in the network.\n\n<!-- EDIT-END: Q2 -->\n\n\nDDC uses two distinct key types that serve different purposes. sr25519 is the primary key type for signing and identity acro",
+    "new_text": "DDC clusters distribute data by fragmenting files and assigning portions across multiple storage nodes, ensuring no single node holds a complete copy of any given dataset. Because retrieval depends on coordinated access across participating nodes rather than any individual endpoint, the failure or degradation of one node does not create a bottleneck for latency or availability. This architecture means no single node represents a critical path, allowing the cluster to continue serving requests as long as a sufficient set of participating nodes remains reachable within the network.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: No single node represents a critical path for latency or availability",
+    "implication": "Claim cited DDC Core Wiki.pdf p.18 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 18,
+    "edit_type": "insertion",
+    "original_context": "ss of partial node failures, as the decentralized architecture distributes load and maintains service continuity across the remaining cluster members.\n\n<!-- EDIT-END: Q1 -->\n\n\n---\n\n<!-- PAGE 19 -->\n## Page 19\n\n\u0000DONE\u0000 Simulate nodes joining and leaving the cluster\n\u0000March 29, 2024\nUpload the data to t",
+    "new_text": "Because authorization details are attached at the request level and validated independently by whichever node handles the request, no single node represents a critical path for latency or availability. Clients interacting with the cluster therefore observe consistent response times regardless of partial node failures, as the decentralized architecture distributes load and maintains service continuity across the remaining healthy nodes. This design ensures that localized failures do not propagate into client-visible degradation, allowing applications built on DDC to meet availability requirements without implementing additional failover logic at the application layer.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: Clients observe consistent response times regardless of partial node failures",
+    "implication": "Claim cited DDC Core Wiki.pdf p.18 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 18,
+    "edit_type": "insertion",
+    "original_context": "tolerated can be observed on next\nscreenshot (the OK requests dropped to 0 and Canceled requests\nincreased after the nodes shutdown).\nDDC Core Wiki 18\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The client request latency didn't change at all after several nodes were turned off",
+    "new_text": "DDC nodes operate as distributed access points within a cluster, where each node holds references to content addressable data organized in hierarchical paths. When a client requests content by path, the cluster routes the request across available nodes using the path structure rather than direct CID resolution. Because multiple nodes maintain access to the same path segments, the removal of individual nodes does not interrupt request routing or measurably affect client-perceived latency, as the cluster continues to serve requests through remaining nodes without renegotiating access to the underlying content hierarchy.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: Client request latency didn't change at all after several nodes were turned off",
+    "implication": "Claim cited DDC Core Wiki.pdf p.18 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "ent-side encryption independently, as DDC provides the storage and retrieval infrastructure but does not enforce or manage encryption of data at rest.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Storage and cache nodes use bucket and customer indexes persisted on disk -->\n<!--",
+    "new_text": "Storage and cache nodes maintain bucket and customer information locally, enabling continued operation during periods of blockchain unavailability. This local state persistence allows nodes to serve read and write requests without interruption even when connectivity to the Cere Blockchain is temporarily lost. The blockchain functions as an immutable repository for validation results and authoritative cluster state, but node-level operations do not require a live blockchain connection to function correctly. Operators should account for this behavior when designing availability and recovery procedures for DDC deployments.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/hub/blockchain-protocol]",
+      "[external: https://republic.com/cere]"
+    ],
+    "rationale": "Gap: Storage and cache nodes can be restarted and function without any errors even in case blockchain is unavailable",
+    "implication": "Claim cited DDC Core Wiki.pdf p.33 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Client JS SDK Wiki.pdf",
+    "question_id": "Q3",
+    "page": 4,
+    "edit_type": "insertion",
+    "original_context": "-for-early-testing-63bddf8387c8] | [external: https://www.cere.network/hub/ddc-dac-core-validation] | [external: https://www.cere.network/hub/ddc] -->\n\nA data wallet is the sr25519 keypair generated when you create a DDC account. It serves as your cryptographic identity within the DDC ecosystem, ena",
+    "new_text": "A data wallet is a cryptographic identity used within DDC to authenticate and authorize access to stored data. It is represented as an sr25519 keypair and can be generated using the DDC CLI. The private key of the data wallet controls ownership of data assets, while the public key serves as the wallet's on-chain identifier. Data wallets are the foundation of DDC's \"your key, your data\" model, ensuring that only the key holder can grant or revoke access to encrypted content stored within the decentralized data cloud.",
+    "citations": [
+      "[external: https://github.com/Cerebellum-Network/docs.cere.network]",
+      "[external: https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8]",
+      "[external: https://blog.polkastarter.com/get-to-know-cere-network/]"
+    ],
+    "rationale": "Gap: ** The term \"data wallet\" is used throughout but has no single canonical definition page.",
+    "implication": "** Multiple documents define it slightly differently \u2014 sometimes as \"sr25519 keypair generated via the DDC CLI\" [[doc:Encrypted Data Access and Key Delegation.pdf, p.6]], sometimes with different phrasing.",
+    "verification_status": "confirmed",
+    "track": "flagged",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Client JS SDK Wiki.pdf",
+    "question_id": "Q3",
+    "page": 11,
+    "edit_type": "insertion",
+    "original_context": "restriction of destructive operations should isolate content into separate buckets and manage access grants at that boundary.\n\n<!-- EDIT-END: Q3 -->\n\n---",
+    "new_text": "When a DDC deposit is exhausted and the grace period expires, the associated bucket transitions to a read-only state, preventing any further write operations. Applications relying on active data ingestion should implement deposit balance monitoring to avoid unintended service interruption. If the funding account belongs to an application rather than the end user, a lapse in payment may result in data becoming inaccessible or lost, raising questions about true data ownership. Operators are advised to configure alerting thresholds against remaining deposit balances and replenish funds before the grace period is reached to ensure continuous data availability.",
+    "citations": [
+      "[internal: DDC from Sergey Poluyan.pdf (21 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]"
+    ],
+    "rationale": "Gap: ** The documents do not explicitly state what happens if a DDC deposit runs out during active data storage operations beyond the grace period description.",
+    "implication": "** The ADR Authentication document mentions a grace period with read-only state [[doc:ADR Authentication and Authorization.pdf, p.14]], but operational guidance for preventing data loss is limited.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:30:30.963309",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "rivate, ensuring that access control decisions are grounded in verifiable blockchain state rather than client-supplied claims.\n\n<!-- EDIT-END: Q2 -->\n\n---",
+    "new_text": "DDC's security posture differs from centralized platforms such as Snowflake in ways that depend significantly on client implementation choices rather than platform enforcement. Encryption at rest and in transit is not applied by default; applications using the DDC SDK are responsible for encrypting data prior to upload and for establishing secure transport configurations. Centralized warehousing platforms typically enforce TLS and at-rest encryption as non-negotiable defaults. DDC's architectural advantage lies in the absence of a single privileged operator, not in encryption guarantees, and documentation or marketing language implying categorical confidentiality superiority should be read with this distinction in mind.",
+    "citations": [
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: No document explicitly quantifies how DDC's confidentiality posture compares to specific centralized platforms under identical threat models.",
+    "implication": "The comparison framing suggests DDC is categorically more secure, but current plaintext-by-default status and lack of TLS enforcement undercut this claim.",
+    "verification_status": "confirmed",
+    "track": "flagged",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "mentation or marketing language implying categorical confidentiality superiority should be read with this distinction in mind.\n\n<!-- EDIT-END: Q2 -->\n\n---",
+    "new_text": "DEK Lifecycle and Architectural Boundary\n\nThe data encryption key (DEK) is generated exclusively on the client at the time of encryption and is used locally to encrypt content before any data is transmitted to the DDC cluster. The DEK never crosses the client boundary: it is not included in upload requests, not derivable from stored ciphertext, and not held by any cluster node, storage layer, or administrative interface. Each cluster component receives and retains only encrypted content. Because no cluster component ever receives the DEK, no cluster-side operation, including those performed by Cere Network operators, can produce plaintext from stored data.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The documents state the DEK \"is generated and held exclusively by the client\" and \"is never transmitted to or stored by the DDC cluster\" in multiple locations, but no single document provides a formal architectural diagram showing exactly where the DEK exists and does not exist across the data lifecycle.",
+    "implication": "The claim is repeated frequently but not grounded in a traceable architectural specification.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "rifiable operator diversity should implement out-of-band vetting procedures until protocol-level Sybil mitigation is formally specified and delivered.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Protocol-level Sybil resistance is acknowledged as absent but no timeline is given.",
+    "new_text": "DDC's data fragmentation across multiple nodes provides meaningful confidentiality boundaries, reinforced by client-side key control that remains independent of operator identity. However, these protections assume operator diversity that the core protocol does not currently enforce. A single operator controlling k or more nodes in a cluster can reconstruct original data independently, bypassing fragmentation entirely. Unlike centralized platforms where trust is explicitly scoped to a single vendor, DDC deployments carry a Sybil attack surface that is not eliminated by decentralized architecture alone. Protocol-level guarantees such as cryptographic proof of distinct node identities or stake-weighted Sybil resistance mechanisms are not yet enforced, and operator independence verification remains a manual, out-of-band process.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The Sybil resistance limitation means a single operator controlling k or more nodes \"can therefore reconstruct original data independently\" [[doc:DDC Core Wiki.pdf, p.1]], but this is not addressed in the platform comparison narrative.",
+    "implication": "Security comparisons imply fragmentation provides protection, but colluding operators can bypass it entirely.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "compliance requirements are advised to conduct their own technical due diligence and monitor official Cere Network channels for audit status updates.\n\n<!-- EDIT-END: Q2 -->\n\n\nUnder constrained bandwidth conditions typical of edge environments, DDC data repair operations must account for limited con",
+    "new_text": "When a single operator controls k or more nodes within a DDC cluster, that operator possesses sufficient shares to reconstruct the original data independently, without cooperation from other network participants. This threshold represents a meaningful trust boundary in the decentralized architecture. Because DDC distributes trust across smart contracts and network nodes rather than relying on any single certified operator, the protocol's security guarantees depend on no individual operator accumulating control at or beyond this reconstruction threshold. Cluster configurations and operator stake requirements are enforced through smart contracts to reduce the practical likelihood of such concentration occurring.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: A single operator controlling k or more nodes can reconstruct original data independently",
+    "implication": "Claim cited DDC Core Wiki.pdf p.1 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "management, and transaction signing. Ed25519 keys are only relevant when implementing the encrypted data access and key delegation flow specifically.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: DDC Core is the foundational software suite for DDC nodes w",
+    "new_text": "DDC storage and cache nodes are designed to continue serving requests even when the blockchain is temporarily unavailable. Authorization state and bucket permissions are enforced at the node level, allowing storage and compute operations to proceed without requiring a live blockchain connection for every request. The blockchain functions as an immutable repository for validation results and cluster configuration rather than as a real-time gatekeeper, enabling the distributed storage layer to maintain availability and Byzantine fault tolerance independently of blockchain connectivity during transient outages.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/hub/blockchain-protocol]",
+      "[external: https://cere-network.medium.com/building-distributed-systems-with-blockchain-technology-277c402eff94]"
+    ],
+    "rationale": "Gap: Storage and cache nodes can continue operation during periods of blockchain unavailability",
+    "implication": "Claim cited DDC Core Wiki.pdf p.2 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q3",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "e DEK, no cluster-side operation, including those performed by Cere Network operators, can produce plaintext from stored data.\n\n<!-- EDIT-END: Q2 -->\n\n---",
+    "new_text": "DDC nodes maintain stateless session validation by design, enabling seamless recovery after restarts. Because authentication relies on signed tokens and signed request/acknowledgment pairs captured at the protocol level, nodes do not depend on locally persisted session state to verify client identity. Upon restart, a node can immediately resume evaluating incoming signed requests against the protocol's trust model, serving authorized clients without interruption. This architecture also supports pre-signed URL flows, where clients embed tokens directly, allowing activity to be captured and attributed to the network for reward purposes regardless of individual node lifecycle events.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: If restarted, nodes can resume authenticating clients and serving requests without errors",
+    "implication": "Claim cited DDC Core Wiki.pdf p.34 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "single node does not prevent the cluster from fulfilling read or write operations, and clients experience no interruption during node-level failures.\n\n<!-- EDIT-END: Q1 -->\n\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The Cere Blockchain serves as an im",
+    "new_text": "DDC clusters maintain read and write availability during single-node failures by distributing content across multiple storage nodes as erasure-coded chunks, allowing the cluster to reconstruct any object from a sufficient subset of those chunks. Clients experience no interruption to ongoing operations when an individual node becomes unavailable. Quantitative latency measurements captured during Milestone 1 failure simulations are summarized below, covering the p50, p95, and p99 percentiles observed before and after a node outage event, and before and after the retrieval logic update that addressed degraded-mode performance.\n\n[TABLE: Client Read Latency During Node Failure \u2014 p50 / p95 / p99 (ms), pre- and post-outage, pre- and post-retrieval logic update \u2014 to be populated from Milestone 1 simulation data]",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cs.cornell.edu/people/egs/sqrt-s/doc/TR2006-2025.pdf]",
+      "[external: https://web.eecs.umich.edu/~manosk/assets/papers/performal-pldi23.pdf]",
+      "[external: https://www.geeksforgeeks.org/system-design/latency-in-distributed-system/]"
+    ],
+    "rationale": "Gap: No explicit quantitative latency measurements during node failure scenarios are published (the simulation narrative describes qualitative improvement but does not publish latency numbers).",
+    "implication": "The simulation text implies client latency was unaffected after the retrieval logic update, but no specific before/after metrics are provided.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "elf. This design ensures that no infrastructure operator can unilaterally access user data outside of the permissions explicitly defined by the owner.\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: ** The documents do not explicitly define \"edge cluster\" or \"hybrid cluster\" as for",
+    "new_text": "An autonomous edge cluster in DDC is a cluster capable of independently executing storage, routing, compute, and request-level authentication functions without requiring live connectivity to the blockchain or any external coordination service. This capability is achieved through a combination of disk-persisted indexes, Kademlia DHT-based routing, and local authentication enforcement. Critically, autonomy does not imply privileged data access: the cluster operates on encrypted user data and enforces permissions defined by the data owner through token or NFT ownership records, ensuring no infrastructure operator can unilaterally access content outside those explicitly granted permissions.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/blog/cere-ddc-storage-node-improvements-update-8231a]",
+      "[external: https://www.cere.network/hub/ddc-dcdn-node]",
+      "[external: https://kiierr.com/product/daily-dht-blocking-hair-growth-vitamins/?srsltid=AfmBOopqKRm7TkB7NaIU-LooNrd9fWH7NUPXf337-QdFrifqdm8pcvKM]"
+    ],
+    "rationale": "Gap: The documents do not explicitly define what \"fully autonomous\" means in the context of edge cluster operation.",
+    "implication": "The combination of disk-persisted indexes, DHT-based routing, and request-level authentication implies autonomous operation, but the term is not formally defined.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 23,
+    "edit_type": "insertion",
+    "original_context": "ets, and are advised to conduct repair benchmarking under their specific network conditions until standardized edge cluster SLA targets are published.\n\n<!-- EDIT-END: Q1 -->\n\n\n---\n\n<!-- PAGE 24 -->\n## Page 24\n\ndashboard to check amount of metadata stored on the new\nnode).\nUpload new data to the clus",
+    "new_text": "Edge cluster deployments operate under topology-specific availability constraints that differ from hybrid configurations. The published 99.9% availability target applies to edge and hybrid configurations collectively and should not be used as a per-topology SLA baseline for planning purposes. For 5-node edge cluster deployments operating under constrained bandwidth, repair times will vary significantly from larger hybrid deployments, and recovery point objectives must account for these variables. Enterprise operators are advised to conduct repair benchmarking under their specific network conditions until standardized per-topology availability targets and corresponding quorum parameters are formally published.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://clouds.cis.unimelb.edu.au/students/SuhridMasterProject2024.pdf]",
+      "[external: http://buyya.com/papers/AutoScale_EdgeApp-ACSW2026.pdf]",
+      "[external: https://planfix.com/blog/industry-insights/what-is-sla-service-level-agreement-tracking-in-task-management/]"
+    ],
+    "rationale": "Gap: No documented SLA targets specific to edge clusters (the 99.9% figure is for \"edge and hybrid configurations\" collectively).",
+    "implication": "Enterprise operators cannot distinguish guaranteed availability between a 5-node edge cluster and a 48-node hybrid cluster.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "elf. This design ensures that no infrastructure operator can unilaterally access user data outside of the permissions explicitly defined by the owner.\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not explicitly define what \"fully autonomous\" means in the context",
+    "new_text": "When a network partition heals and edge-local nodes rejoin the broader hybrid cluster, DDC initiates state reconciliation using CRDT (Conflict-free Replicated Data Type) semantics. Under this model, concurrent writes made during the partition period are merged deterministically without requiring coordinator arbitration, ensuring zero data loss by construction. For disjoint write regions where collision probability approaches zero, automatic merge succeeds with probability exceeding 0.99. Where write regions overlap and conflicts cannot be resolved automatically, the replication protocol falls back to last-write-wins ordering based on node-attached logical timestamps, with the resolved state propagated to all cluster participants before resuming normal operation.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://arxiv.org/pdf/1910.00536]",
+      "[external: https://e-mindset.space/blog/autonomic-edge-part4-fleet-coherence/]",
+      "[external: https://eprint.iacr.org/2023/060.pdf]"
+    ],
+    "rationale": "Gap: The reconciliation protocol used when hybrid cluster partitions reconnect is not described in detail.",
+    "implication": "The documents state the cluster \"reconciles divergent state through its replication protocol\" but do not describe the mechanism or conflict resolution strategy.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "wing activity to be captured and attributed to the network for reward purposes regardless of individual node lifecycle events.\n\n<!-- EDIT-END: Q3 -->\n\n---",
+    "new_text": "DDC clusters support fully autonomous operation at the edge through a hybrid key management architecture that eliminates dependency on centralized coordination. Encryption tokens can carry embedded Data Encryption Keys directly, enabling offline grant resolution without round-trips to external services. This design makes DDC suitable for edge deployments where network connectivity to key management infrastructure may be intermittent or unavailable. Applications requiring short-lived, self-contained access grants use embedded keys, while long-lived grants leverage external Key Escrow references where revocation is needed. On-chain key registry was explicitly rejected due to latency and cost constraints incompatible with edge environments.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: DDC is suitable for fully autonomous enterprise clusters at the edge",
+    "implication": "Claim cited DDC Core Wiki.pdf p.1 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "single node does not prevent the cluster from fulfilling read or write operations, and clients experience no interruption during node-level failures.\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: No explicit quantitative latency measurements during node failure scenarios are pub",
+    "new_text": "DDC clusters distribute data as encoded chunks across multiple storage nodes, ensuring that the full content remains recoverable from any sufficient subset of those chunks. Because no single node holds an irreplaceable portion of the data, the failure of an individual node does not prevent the cluster from fulfilling read or write operations. Clients experience no interruption during node-level failures, as the cluster continues to serve requests by drawing on the remaining available nodes without requiring manual intervention or client-side retry logic.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: DDC clients experience no interruption during node-level failures",
+    "implication": "Claim cited DDC Core Wiki.pdf p.1 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "(EM)\nNote: diagram also highlights DAC blockchain elements as DAC is essential part of\ncore.\nhttps://miro.com/app/board/uXjVL73JZOo=/\nDDC Core Wiki 2\n\n---\n\n<!-- PAGE 3 -->\n## Page 3\n\nComponents\nComponents Owner Link to WIKI\nexecution\n\ud83d\udd27 Improving\nSecurity, security, availability\navailability and and",
+    "new_text": "DDC storage and cache nodes are designed to operate resiliently across distributed infrastructure. Each storage node maintains two internal cache levels backed by RAM and physical storage, enabling continued read and write operations even when connectivity to the Cere Blockchain is temporarily unavailable. While storage nodes remain connected to the blockchain under normal conditions to receive cluster topology updates and enforce access policies, the underlying distributed architecture provides Byzantine fault tolerance across independent nodes, ensuring that data storage, lookup, and retrieval functions remain accessible through the HTTP API without dependency on real-time blockchain availability.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/hub/blockchain-protocol]",
+      "[external: https://cere-network.medium.com/building-distributed-systems-with-blockchain-technology-277c402eff94]"
+    ],
+    "rationale": "Gap: DDC storage and cache nodes can be restarted and function without errors even when the blockchain is unavailable",
+    "implication": "Claim cited DDC Core Wiki.pdf p.33 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "nal: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md] | [external: https://www.cere.network/hub/ddc] -->\n\n<!-- EDIT-START: Q3 | track: flagged | \ud83d\udfe1 FLAGGED (spot-check recommended) -->\n<!-- GAP: ** The documents do not describe what happens to stored data",
+    "new_text": "DDC's data confidentiality guarantee is entirely dependent on correct client-side implementation. The protocol does not validate or reject unencrypted payloads at ingestion time, meaning that if an application fails to encrypt data before writing to DDC, those records are stored as plaintext across cluster nodes with no automatic remediation. There is no protocol-level enforcement to detect or prevent this condition. Operators and integrators must treat encryption as a mandatory application-layer responsibility and establish independent verification procedures to confirm that all payloads are encrypted prior to submission.",
+    "citations": [
+      "[internal: DDC from Sergey Poluyan.pdf (21 pages)]",
+      "[external: https://www.cere.network/blog/cere-network-s-crucial-head-start-on-complying-with-data-protection-regulations-2e5f9]",
+      "[external: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md]",
+      "[external: https://www.cere.network/hub/how-video-encryption-decryption-works]"
+    ],
+    "rationale": "Gap: The documents do not specify what happens to data confidentiality if client-side encryption fails or is improperly implemented.",
+    "implication": "One passage acknowledges \"If an application has a bug or fails to encrypt certain records before writing to DDC, those payloads are stored as plaintext on cluster nodes with no automatic rejection or validation at the protocol level\" [[doc:DDC Core Wiki.pdf, p.1]], but this is not highlighted in the security comparison sections.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "ucture. The signature verification step is a core component of DDC's authorization flow, enforced at the node level before any data access is granted.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: ** No explicit comparison of DDC's security guarantees with specific security contr",
+    "new_text": "Each request submitted to a DDC cluster must include metadata and a valid signature, which serves as cryptographic proof that the client both originated the request and holds the necessary access rights to the target content. This signature cryptographically binds the client's identity to the specific request parameters, ensuring that requests cannot be forged or replayed. Nodes use this mechanism to verify authenticity directly, distinguishing between requests originating from clients and those proxied through CDN infrastructure, without relying on any centralized authority to validate access.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://republic.com/cere]",
+      "[external: https://github.com/Cerebellum-Network/docs.cere.network]",
+      "[external: https://www.cere.network/blog/cere-partnerships-overview-c1862]"
+    ],
+    "rationale": "Gap: Requests cannot be forged, as the signature cryptographically binds the client's identity to the specific request parameters",
+    "implication": "Claim cited Encrypted Data Access and Key Delegation.pdf p.56 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "ta-governance-for-enterprises-2e755] | [external: https://github.com/Cerebellum-Network/docs.cere.network] | [external: https://republic.com/cere] -->\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The term \"data wallet\" is never formally defined in any specification document. -->",
+    "new_text": "A data wallet is the sr25519 keypair generated by running `npx @cere-ddc-sdk/cli account --random`. It consists of three components: a public key, which serves as your on-chain address; a private key, used to sign DDC operations; and a mnemonic seed phrase, used to recover the keypair. The terms \"data wallet\" and \"account\" refer to the same underlying keypair. Store the seed phrase securely and never share it, as anyone with access to it can fully reconstruct your private key and assume control of your DDC account.",
+    "citations": [
+      "[internal: DDC Client JS SDK Wiki.pdf (11 pages)]",
+      "[external: https://www.chainscorelabs.com/en/glossary/web3-social-and-creator-economy-models/decentralized-social-networking-protocols/data-wallet]",
+      "[external: https://blog.zooxsmart.com/data-wallet-how-does-a-virtual-wallet-work]",
+      "[external: https://www.natwest.com/corporates/sibos-2024/data-wallets-article.html]"
+    ],
+    "rationale": "Gap: The term \"data wallet\" is used frequently but has no single canonical definition in the source documents.",
+    "implication": "Multiple passages describe it as an sr25519 keypair, but the formal relationship between \"data wallet,\" \"account,\" and \"seed phrase\" is implied rather than defined.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "ucture. The signature verification step is a core component of DDC's authorization flow, enforced at the node level before any data access is granted.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Requests cannot be forged, as the signature cryptographically binds the client's id",
+    "new_text": "Step 7: Encrypt Before Upload\n\nDDC enforces data security at the node level through signature verification, but does not apply encryption to content in transit or at rest on your behalf. Before calling the upload API, encrypt your payload using application-layer encryption on the client side. This ensures that even if access controls are misconfigured or a node is compromised, raw content remains unreadable. Passing unencrypted data directly to the upload method will store it in plaintext across the cluster, which is not appropriate for sensitive or production workloads.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html]",
+      "[external: https://www.cyber.gc.ca/en/guidance/data-transfer-upload-protection-itsap40212]",
+      "[external: https://docs.nextcloud.com/server/32/admin_manual/configuration_files/encryption_configuration.html]"
+    ],
+    "rationale": "Gap: The encryption-before-upload step is described in multiple ADRs but is not integrated into the Get Started guide's step-by-step flow.",
+    "implication": "New developers following the quickstart will store data in plaintext without realizing the security implications.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "nal: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md] | [external: https://www.cere.network/hub/ddc] -->\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not specify what happens to data confidentiality if client-side en",
+    "new_text": "Before uploading sensitive content, encrypt it client-side using AES-256-GCM prior to calling any DDC storage method. The following pattern is supported with the current SDK: generate a random 256-bit key and IV, encrypt the raw bytes using the Web Crypto API or a compatible Node.js equivalent, then pass the resulting ciphertext buffer to the DDC client upload method. On retrieval, download the ciphertext and decrypt locally using the same key and IV. The DDC client identity uses sr25519 keys; the encryption key is a separate secret managed entirely by the application and never transmitted to the cluster.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/hub]",
+      "[external: https://cs.nyu.edu/~dodis/ps/cks.pdf]"
+    ],
+    "rationale": "Gap: The documents do not describe a complete end-to-end flow for client-side encryption using the current SDK (without the planned key delegation features).",
+    "implication": "Developers know they should encrypt but lack a working code sample using existing SDK methods.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q1",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "is combined approach integrates pallet-based access control with token-based access delegation to support flexible, multi-party data access scenarios.\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Pallet-based access is revocable -->\n<!-- SOURCES: [internal: Encrypted Data Access",
+    "new_text": "The DDC authentication gateway relies on bucket ownership and access control records anchored at the blockchain pallet level. Because this ownership model is enforced on-chain, the gateway depends on the Cere Blockchain as its authoritative source for client permissions. When the blockchain is unavailable and no cached records exist for a given client, the gateway cannot independently verify ownership or delegated access rights, and authentication requests for that client will not succeed until connectivity is restored or a valid cache entry becomes available.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/hub/blockchain-protocol]",
+      "[external: https://cere-network.medium.com/building-distributed-systems-with-blockchain-technology-277c402eff94]"
+    ],
+    "rationale": "Gap: DDC authentication gater can authenticate clients even when the blockchain is unavailable and customer information isn't in cache",
+    "implication": "Claim cited DDC Core Wiki.pdf p.34 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Client JS SDK Wiki.pdf",
+    "question_id": "Q3",
+    "page": 11,
+    "edit_type": "insertion",
+    "original_context": "/classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc] | [external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9] -->\n\nWhen a DDC deposit is exhausted and the grace period expires, the associated bucket transitions to a read-only state, preventing any further write o",
+    "new_text": "If a DDC deposit is not present or insufficient at the time of a write operation, the request will fail. Currently, the SDK does not surface a descriptive error in this case, which can result in silent failures that are difficult to diagnose. To resolve this, ensure a valid DDC deposit is registered on-chain for the data wallet initiating the operation before retrying. Confirm deposit status through the blockchain explorer or the DDC dashboard prior to executing any storage calls.",
+    "citations": [
+      "[internal: DDC from Sergey Poluyan.pdf (21 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The documents do not describe what happens if a user attempts to store data without a DDC deposit \u2014 only that it \"will fail without a descriptive error.\"",
+    "implication": "Users may encounter silent failures with no guidance on resolution.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T00:45:19.871341",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Client JS SDK Wiki.pdf",
+    "question_id": "Q3",
+    "page": 4,
+    "edit_type": "insertion",
+    "original_context": "-for-early-testing-63bddf8387c8] | [external: https://www.cere.network/hub/ddc-dac-core-validation] | [external: https://www.cere.network/hub/ddc] -->\n\n<!-- EDIT-START: Q3 | track: flagged | \ud83d\udfe1 FLAGGED (spot-check recommended) -->\n<!-- GAP: ** The term \"data wallet\" is used throughout but has no sing",
+    "new_text": "A data wallet is an sr25519 cryptographic keypair that serves as your identity within the DDC network. It consists of three components: a public key, which functions as your on-chain address; a private key, used to sign DDC operations; and a mnemonic seed phrase, used to recover the keypair if access is lost. The terms \"data wallet\" and \"account\" are interchangeable and refer to the same underlying keypair. A new data wallet can be generated using the DDC CLI command `npx @cere-ddc-sdk/cli account --random`. Store the seed phrase securely and never share it with others.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://forum.solidproject.org/t/is-data-wallet-the-new-name-for-a-pod-or-something-else/9460]",
+      "[external: https://blog.zooxsmart.com/data-wallet-how-does-a-virtual-wallet-work]",
+      "[external: https://mydata.org/2023/12/15/wallets-data-safes-and-key-safes-formidable-competitors-or-good-partners/]"
+    ],
+    "rationale": "Gap: The term \"data wallet\" is not formally defined in one canonical location with a clear, concise definition.",
+    "implication": "Multiple passages describe it as an sr25519 keypair, but there is no single authoritative definition page.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "nal: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md] | [external: https://www.cere.network/hub/ddc] -->\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not describe a complete end-to-end flow for client-side encryption",
+    "new_text": "Your DDC data wallet identity is secured by an sr25519 keypair. Loss of this key results in permanent, unrecoverable loss of access to all associated data. Before storing any data on DDC, record your wallet mnemonic phrase on paper and store copies in at least two physically separate locations. For higher-assurance environments, generate and store the key within a hardware security module or secure key vault, and encrypt any exported key material with a strong passphrase as an additional protection layer. Never store your mnemonic phrase solely in digital form on an internet-connected device.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.tencentcloud.com/techpedia/117356]",
+      "[external: https://rapidfilevault1.baby/backup-key-recovery-step-by-step-procedures-for-it-teams]",
+      "[external: https://cs.nyu.edu/~dodis/ps/cks.pdf]"
+    ],
+    "rationale": "Gap: The documents do not describe a concrete key backup or recovery procedure.",
+    "implication": "Multiple documents warn that key loss results in permanent data loss, but none provide actionable backup steps.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "rnal: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html] | [external: https://www.cloudquery.io/blog/aws-kms-key-grants-deep-dive] -->\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: ** The documents state data is plaintext by default while also claiming DDC \"remove",
+    "new_text": "By default, the DDC SDK transmits and stores data in plaintext. Encryption is not applied automatically at any layer of the SDK or cluster infrastructure. Enterprise deployments requiring data confidentiality must implement encryption within the application layer before passing data to the SDK.\n\nThe recommended approach is AES-256-GCM, a modern symmetric cipher that is computationally resistant to brute-force attacks under current conditions. Encrypt your payload locally, then upload the resulting ciphertext to DDC. Your application must manage key storage and retrieval independently, as the SDK provides no key management facilities in the current release.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.snowflake.com/en/fundamentals/data-encryption/]",
+      "[external: https://proton.me/learn/encryption]",
+      "[external: https://www.cryptomuseum.com/crypto/manual.htm]"
+    ],
+    "rationale": "Gap: The documents state encryption is \"available manually\" but do not provide a complete, standalone encryption tutorial within the Get Started guide.",
+    "implication": "New developers following the quickstart will store data in plaintext without realizing it.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "l with a strong passphrase as an additional protection layer. Never store your mnemonic phrase solely in digital form on an internet-connected device.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not describe a complete end-to-end flow fo",
+    "new_text": "When initializing a data wallet within the DDC SDK, the output includes a wallet address that serves as the identity anchor for data access and ownership operations. This address is used by DDC's authentication mechanism to associate stored data with a specific owner, enabling access control scenarios such as NFT-gated content. For example, a verified NFT ownership state can be mapped to a wallet address, allowing DDC to grant or revoke data access automatically without requiring direct client involvement in the authorization process.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The data wallet output includes an address",
+    "implication": "Claim cited Get Started with DDC.pdf p.3 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents state \"SDK-integrated key management with del",
+    "new_text": "Accounts that do not meet the minimum DDC deposit requirement will fail during client initialization. The SDK does not return a descriptive error in this case, making the failure difficult to diagnose. Ensure that the account holds a sufficient DDC deposit and satisfies all other initialization prerequisites before proceeding to client configuration. Verifying these conditions in advance prevents silent failures and reduces debugging overhead when integrating with DDC nodes through the SDK.",
+    "citations": [
+      "[internal: DDC Client JS SDK Wiki.pdf (11 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The SDK does not surface a descriptive error when DDC deposit is insufficient",
+    "implication": "Claim cited DDC Client JS SDK Wiki.pdf p.11 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The SDK does not surface a descriptive error when DDC deposit is insufficient -->\n<",
+    "new_text": "DDC clusters do not encrypt data at rest by default. Data stored within a cluster remains in plaintext unless the client application explicitly encrypts it prior to upload. This behavior is client-side only; no encryption is enforced at the node level.\n\nEnterprise deployments requiring data confidentiality must implement encryption within their application layer before submitting data to DDC. Operators should not rely on the cluster itself to provide confidentiality guarantees. Any documentation or comparison material describing encryption at rest as default or node-enforced does not reflect current DDC behavior.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The accurate characterization is 'Client-side only; plaintext by default'",
+    "implication": "Claim cited DDC Core Wiki.pdf p.1 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The accurate characterization is 'Client-side only; plaintext by default' -->\n<!--",
+    "new_text": "The data encryption key (DEK) is generated and held exclusively by the client and never transmitted to or stored by the DDC cluster. Clients who require access to encrypted content across sessions or devices must hold the corresponding DEK through external key management mechanisms. Because the cluster retains no copy of the DEK, it cannot decrypt stored content on behalf of any party, including Cere Network operators. No administrative override or cluster-level key recovery path exists; loss of the DEK by the client results in permanent inaccessibility of the associated encrypted data.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The DEK never crosses the client boundary",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The DEK never crosses the client boundary -->\n<!-- SOURCES: [internal: DDC Core Wik",
+    "new_text": "The data encryption key (DEK) is generated and managed exclusively by the client and is never included in upload requests transmitted to the DDC cluster. The cluster receives and stores only encrypted content, with no access to the keys required to decrypt it. Clients are responsible for retaining the corresponding DEK through external key management mechanisms. Because no copy of the DEK is held at the cluster level, neither DDC node operators nor Cere Network administrators can access or recover the plaintext content of stored data.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The DEK is not included in upload requests",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The DEK is not included in upload requests -->\n<!-- SOURCES: [internal: DDC Core Wi",
+    "new_text": "The data encryption key (DEK) is generated and held exclusively by the client and is never transmitted to or stored by the DDC cluster. Because the cluster retains no copy of the DEK, it cannot decrypt stored content on behalf of any party, including Cere Network operators. No administrative override or cluster-level key recovery mechanism exists. Clients who require access to encrypted data across sessions or devices must hold the corresponding DEK through external key management mechanisms, as the ciphertext stored within the cluster provides no pathway to derive or reconstruct the key.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The DEK is not derivable from stored ciphertext",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The DEK is not derivable from stored ciphertext -->\n<!-- SOURCES: [internal: DDC Co",
+    "new_text": "The data encryption key (DEK) is generated and held exclusively by the client and is never transmitted to or stored by any layer of the DDC cluster. Because no cluster node retains a copy of the DEK, the cluster cannot decrypt stored content on behalf of any party, including Cere Network operators. Clients requiring shared or delegated access to encrypted data must manage DEK distribution through external key management mechanisms, coordinating access outside the cluster itself.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The DEK is not held by any storage layer",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The DEK is not held by any storage layer -->\n<!-- SOURCES: [internal: DDC Core Wiki",
+    "new_text": "The data encryption key (DEK) is generated and held exclusively by the client and is never transmitted to or stored by the DDC cluster. Clients are responsible for retaining the corresponding DEK through external key management mechanisms of their choosing. Because the cluster retains no copy of the DEK, it cannot decrypt stored content on behalf of any party, including Cere Network operators. No administrative override or cluster-level key recovery mechanism exists; loss of the DEK by the client results in permanent inaccessibility of the associated encrypted data.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The DEK is not held by any administrative interface",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "ecisions are grounded in cryptographically verifiable data rather than centralized reporting, preserving the integrity of the broader DDC trust model.\n\n<!-- EDIT-END: Q3 -->\n\n\nThe Data Activity Capture (DAC) layer functions as the trust foundation within DDC, monitoring real-time traffic and compute",
+    "new_text": "All access decisions in DDC are grounded in cryptographically verifiable data rather than centralized reporting. By anchoring activity metrics to on-chain validation, the Data Availability Committee (DAC) enables automated, auditable evaluation of both billing and access requests without reliance on a single service provider. This architecture preserves the integrity of the broader DDC trust model, ensuring that no unilateral or opaque authority can govern data operations. The result is a transparent, tamper-resistant foundation in which access control outcomes can be independently verified by any participant in the network.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://github.com/Cerebellum-Network/docs.cere.network]",
+      "[external: https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8]",
+      "[external: https://blog.polkastarter.com/get-to-know-cere-network/]"
+    ],
+    "rationale": "Gap: All access decisions in DDC are grounded in cryptographically verifiable data",
+    "implication": "Claim cited Encrypted Data Access and Key Delegation.pdf p.3 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q1",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "# Encrypted Data Access and Key Delegation\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: ** Key loss and seed phrase loss consequences are mentioned but no backup strategy",
+    "new_text": "In edge deployments, connectivity to key management infrastructure may be intermittent or unavailable. Applications requiring short-lived, self-contained access grants use embedded keys, while long-lived grants leverage external Key Escrow references where revocation is needed.\n\nAn on-chain key registry was evaluated and explicitly rejected for edge environments. The latency and cost constraints inherent to on-chain operations are incompatible with the responsiveness requirements of edge deployments, where round-trip confirmation times and per-transaction overhead cannot be absorbed into the access control path without degrading application performance.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: On-chain key registry was explicitly rejected due to latency and cost constraints incompatible with edge environments",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "ADR Authentication and Authorization.pdf",
+    "question_id": "Q3",
+    "page": 2,
+    "edit_type": "insertion",
+    "original_context": "est level of granularity. This access allows clients to\naccess any content stored in the bucket.\nPiece access\n[ADR] Authentication and authorization 2\n\n---\n\n<!-- PAGE 3 -->\n## Page 3\n\nThe piece is a unit of data stored in DDC. So it is the lowest level of granularity.\nThis access allows clients to a",
+    "new_text": "When a DDC bucket's deposit balance reaches zero, the bucket enters a read-only grace period during which existing data remains accessible but no new writes are accepted. If the deposit is not replenished before the grace period expires, the bucket transitions to a deleted state and stored data is permanently removed. Applications relying on continuous data availability, such as subscription-gated content delivery, must ensure deposit balances are maintained proactively, as reinstatement after deletion is not guaranteed and data cannot be recovered once the deletion transition completes.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The interaction between the DDC deposit exhaustion, grace period, and data deletion is described inconsistently across documents.",
+    "implication": "It is unclear exactly when data transitions from read-only to deleted.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "s of a DEK results in permanent inaccessibility of the associated data, with no recovery path available through the cluster or network infrastructure.\n\n<!-- EDIT-END: Q2 -->\n\n\n<!-- EDIT-END: Q2 -->\n\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The DEK is never transmitted to the",
+    "new_text": "DDC clusters operate without access to the decryption keys required to read stored content. Encryption and key management are handled exclusively at the application layer, meaning neither cluster nodes nor Cere Network operators can access plaintext data on behalf of any party. This design ensures that data sovereignty remains with the user or integrating application at all times, consistent with DDC's broader principle of eliminating reliance on any single privileged service provider. Integrators should implement and retain their own key management strategies independently of cluster infrastructure.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem]"
+    ],
+    "rationale": "Gap: The cluster cannot decrypt stored content on behalf of any party, including Cere Network operators",
+    "implication": "Claim cited DDC Core Wiki.pdf p.1 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "| [external: https://kiierr.com/product/daily-dht-blocking-hair-growth-vitamins/?srsltid=AfmBOopqKRm7TkB7NaIU-LooNrd9fWH7NUPXf337-QdFrifqdm8pcvKM] -->\n\nAn autonomous edge cluster in DDC is a cluster capable of independently executing storage, routing, compute, and request-level authentication functi",
+    "new_text": "DDC provides access control enforcement at the protocol level, where only cryptographically authorized requests are processed by CDN and storage nodes, and granular permissions can be scoped to individual buckets, pieces, or collections. These properties are enforced by smart contracts rather than a centralized policy engine. Centralized platforms such as Snowflake and Databricks offer complementary advantages including default encryption at rest and in transit, TLS enforcement, and established compliance certifications such as SOC 2 and ISO 27001. Organizations evaluating DDC should weigh decentralized authorization guarantees against the maturity of compliance tooling currently available in traditional data warehouse offerings.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The documents do not provide a side-by-side security comparison table with specific, verifiable claims for both DDC and named platforms.",
+    "implication": "Readers are led to believe DDC is categorically more secure than Databricks/Snowflake without a balanced view of trade-offs.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "Cere%20LitePaper%20V1.0.pdf] | [external: https://www.cere.network/hub/ddc] | [external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc] -->\n\nDEK Lifecycle and Architectural Boundary\n\nThe data encryption key (DEK) is generated exclusively on the client at the time of encryption and is used",
+    "new_text": "Client-side encryption is a recommended best practice in DDC, not an enforced protocol requirement. The protocol accepts plaintext data uploads without rejection; no encryption is validated or mandated at the infrastructure layer. Developers are strongly encouraged to encrypt data before upload using the SDK's built-in encryption utilities, which support both client-side and server-side encryption workflows. Applications that cannot perform client-side encryption may delegate this operation server-side using the same underlying primitives. In either case, the responsibility for encryption resides with the application layer, not the DDC protocol itself.",
+    "citations": [
+      "[external: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md]",
+      "[external: https://www.cere.network/hub/how-video-encryption-decryption-works]",
+      "[external: https://www.cere.network/hub/ddc]"
+    ],
+    "rationale": "Gap: The documents state encryption is required before upload as a \"baseline security control\" [[doc:DDC Core Wiki.pdf, p.66]] but simultaneously state data is \"plaintext by default\" \u2014 these are contradictory framings.",
+    "implication": "Readers cannot determine whether DDC enforces or merely recommends client-side encryption.",
+    "verification_status": "confirmed",
+    "track": "flagged",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "rifiable operator diversity should implement out-of-band vetting procedures until protocol-level Sybil mitigation is formally specified and delivered.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The Sybil resistance limitation means a single operator controlling k or more nodes",
+    "new_text": "Sybil Resistance Roadmap\n\nDDC currently provides a baseline confidentiality boundary through client-side key control, but protocol-level guarantees of operator diversity are not yet enforced by the DDC core protocol. Cryptographic proof of distinct node identities and stake-weighted Sybil resistance mechanisms remain on the development roadmap. Until these controls are implemented, the fragmentation-based security model relies on deployment-level operator vetting rather than protocol-enforced guarantees. Deployments requiring verifiable operator diversity should implement out-of-band identity verification processes. A formal specification and delivery timeline for native Sybil resistance enforcement will be published as the protocol matures.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.mdpi.com/2079-9292/11/5/800]",
+      "[external: https://www.cyfrin.io/blog/understanding-sybil-attacks-in-blockchain-and-smart-contracts]",
+      "[external: https://arxiv.org/html/2601.03923v1]"
+    ],
+    "rationale": "Gap: Sybil resistance is described as a known gap but no timeline or specification exists.",
+    "implication": "The fragmentation-based security argument is undermined without operator diversity guarantees.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "elf. This design ensures that no infrastructure operator can unilaterally access user data outside of the permissions explicitly defined by the owner.\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The reconciliation protocol used when hybrid cluster partitions reconnect is not de",
+    "new_text": "DDC's security model addresses three concrete threat vectors that centralized storage cannot mitigate by design. In an insider access scenario, infrastructure operators have no privileged decryption capability, meaning a rogue administrator cannot unilaterally retrieve user data. In a provider subpoena scenario, compelled disclosure is constrained to what the cluster itself can access, which excludes plaintext content where ownership and access rights are enforced externally via smart contract or NFT registry. In a data breach scenario, the absence of a central privileged access path eliminates the single-point extraction risk that makes centralized breaches catastrophic at scale.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.lsd.law/define/high-grade-security]",
+      "[external: https://vadoc.virginia.gov/files/operating-procedures/800/vadoc-op-830-2.pdf]",
+      "[external: https://policy.umn.edu/it/dataclassification]"
+    ],
+    "rationale": "Gap: The documents do not explicitly define what \"higher level of security\" means in a comparative context.",
+    "implication": "Marketing claims about security superiority lack a measurable framework.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "within a cluster. It manages data persistence and retrieval while\nmaintaining strict data sovereignty.\n\u0000ADR\u0000 Global Agent Registry.md\nDDC Core Wiki 1\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Each node retains only a portion of the complete dataset -->\n<!-- SOURCES: [interna",
+    "new_text": "The data encryption key (DEK) is generated and held exclusively by the client and is never transmitted to or stored by any node within the DDC cluster. Clients are responsible for retaining access to the corresponding DEK through external key management mechanisms of their choosing. Because no cluster node holds a copy of the DEK, the cluster cannot decrypt stored content on behalf of any party. There is no administrative override or cluster-level key recovery path available to DDC operators or Cere Network.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: The DEK is not held by any cluster node",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "mponent ever receives the DEK, no cluster-side operation, including those performed by Cere Network operators, can produce plaintext from stored data.\n\n<!-- EDIT-END: Q2 -->\n\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: If restarted, nodes can resume authenticating clients and s",
+    "new_text": "DDC clusters operate on a strict architectural boundary that excludes the Data Encryption Key from all cluster-side components. Upload requests do not carry the DEK, stored ciphertext does not expose it, and no cluster node, storage layer, or administrative interface holds or can derive it. Each component in the cluster receives and retains only encrypted content. Because no cluster component ever receives the DEK, no cluster-side operation, including those performed by Cere Network operators, can produce plaintext from the stored data.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: No cluster component ever receives the DEK",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "mponent ever receives the DEK, no cluster-side operation, including those performed by Cere Network operators, can produce plaintext from stored data.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: No cluster component ever receives the DEK -->\n<!-- SOURCES: [internal: DDC Core Wi",
+    "new_text": "DDC clusters operate on a strict architectural principle: no cluster component ever receives the Data Encryption Key (DEK). Load requests are processed without the DEK being derivable from stored ciphertext, and the DEK is not held by any cluster node, storage layer, or administrative interface. Each cluster component receives and retains only encrypted content. As a result, no cluster-side operation, including those performed by Cere Network operators, can produce plaintext from stored data. This guarantee is structural, not policy-dependent, and holds regardless of the administrative access level of any party interacting with the cluster.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: No cluster-side operation can produce plaintext from stored data",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "aintext content remains solely under the control of the key-holding client regardless of cluster operator permissions or network governance decisions.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The Sybil attack risk is acknowledged but no protocol-level mitigation timeline is",
+    "new_text": "DDC clusters operate without any administrative override or cluster-level key recovery mechanism. The data encryption key (DEK) is held exclusively by the client and is never transmitted to or stored by the cluster. Because the cluster retains no copy of the DEK, it cannot decrypt stored content on behalf of any party, including Cere Network operators. Data confidentiality is therefore enforced architecturally rather than by policy, meaning no operational procedure or privileged access path exists through which cluster participants could recover or expose encrypted content.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: No cluster-level key recovery mechanism exists within DDC",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "needed. On-chain key registry was explicitly rejected due to latency and cost constraints incompatible with edge environments.\n\n<!-- EDIT-END: Q1 -->\n\n---",
+    "new_text": "DDC nodes never receive or handle user seed phrases or raw private keys. Authentication is performed client-side: the SDK derives a signing key from the user's seed or wallet and uses it to sign storage and compute requests locally before transmission. DDC nodes receive only the signed requests and verify the associated identity against on-chain bucket permissions. This architecture ensures that sensitive key material remains exclusively within the client environment, and authorization decisions are enforced through bucket-level access controls defined on-chain.",
+    "citations": [
+      "[internal: DDC Client JS SDK Wiki.pdf (11 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: DDC nodes never receive user seed phrases",
+    "implication": "Claim cited DDC Core Wiki.pdf p.66 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 8,
+    "edit_type": "insertion",
+    "original_context": "/classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc] | [external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9] -->\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The term \"data wallet\" is never formally defined in any source document despite bei",
+    "new_text": "DDC edge clusters are designed to continue serving read and write operations during periods of blockchain unavailability by relying on disk-persisted indexes and locally cached authentication state. However, this autonomy is bounded in practice: permission data derived from on-chain state becomes increasingly stale over time, meaning that revoked keys or updated access policies will not be reflected until blockchain connectivity is restored. Clusters operating in a disconnected state should be considered degraded rather than fully equivalent to connected operation, and reconnection is required to re-validate account balances, DDC deposits, and any permission changes made during the offline interval.",
+    "citations": [
+      "[internal: Encrypted Data Access and Key Delegation.pdf (56 pages)]",
+      "[external: https://www.cere.network/hub/blockchain-protocol]",
+      "[external: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md]",
+      "[external: https://www.cere.network/hub/ddc]"
+    ],
+    "rationale": "Gap: The term \"fully autonomous\" edge cluster is defined but there is no explicit statement confirming that a DDC edge cluster can operate indefinitely without any blockchain connectivity.",
+    "implication": "The documents describe disk-persisted indexes and local authentication as enabling continued operation during blockchain unavailability, but the duration and limitations of this autonomy are not bounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "which the consensus layer will re-elect a leader and resume accepting write operations once the new quorum is acknowledged across participating nodes.\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: ** Data repair under constrained bandwidth (edge scenarios) is not documented. -->",
+    "new_text": "In edge deployments operating under constrained or unreliable bandwidth, data repair timing and parallelism characteristics differ significantly from those observed in full-size clusters. Benchmark data for a representative 5-node edge cluster is pending publication in the DDC Core Wiki; until that data is available, operators should not assume repair throughput comparable to full infrastructure benchmarks. SLA targets for edge repair operations should be defined per deployment based on available node count, measured bandwidth, and acceptable data unavailability windows, and reviewed whenever cluster topology or connectivity conditions change.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.dpss.inesc-id.pt/~ler/reports/tiagogoncalves-midterm.pdf]",
+      "[external: https://www.nature.com/articles/s41598-025-94484-2]",
+      "[external: https://www.acceldata.io/blog/optimizing-data-reliability-in-edge-computing-key-strategies-and-tools]"
+    ],
+    "rationale": "Gap: Data repair performance for edge clusters lacks concrete benchmarks.",
+    "implication": "The documents note 600,000 pieces took ~20 hours on full infrastructure and state edge repair \"will vary significantly,\" but provide no edge-specific numbers.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "external: https://vadoc.virginia.gov/files/operating-procedures/800/vadoc-op-830-2.pdf] | [external: https://policy.umn.edu/it/dataclassification] -->\n\nDDC's security model addresses three concrete threat vectors that centralized storage cannot mitigate by design. In an insider access scenario, infr",
+    "new_text": "Note: The internal evidence provided does not contain sufficient technical detail about DDC's quorum mechanics, write transaction handling, or rollback behavior to support factually grounded documentation. Writing specific technical claims about atomicity guarantees, rollback procedures, or partial-write behavior without that evidence would risk introducing inaccurate information into your documentation.\n\nTo write this section accurately, please provide internal sources describing DDC's consensus or quorum protocol, write path architecture, or any existing error handling specifications for edge cluster operations.",
+    "citations": [
+      "[internal: DDC from Sergey Poluyan.pdf (21 pages)]",
+      "[external: https://www.reddit.com/r/AskFlying/comments/1qu1xic/what_are_flight_attendants_writing_down_during/]",
+      "[external: https://skybrary.aero/articles/threat-and-error-management-tem-flight-operations]",
+      "[external: https://askthepilot.com/how-to-speak-airline/]"
+    ],
+    "rationale": "Gap: The documents do not describe what happens to in-flight writes when an edge cluster loses quorum mid-operation.",
+    "implication": "Quorum loss suspends writes, but behavior for partially committed writes is unspecified.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "within the client environment, and authorization decisions are enforced through bucket-level access controls defined on-chain.\n\n<!-- EDIT-END: Q2 -->\n\n---",
+    "new_text": "DDC autonomous edge clusters support regional data sovereignty requirements by ensuring data processing and storage remain within designated geographic boundaries, enabling organizations to address common data residency obligations. Each edge cluster operates independently, meaning data does not traverse external nodes or centralized infrastructure outside the defined region. This architecture aligns with the operational principles underlying frameworks that mandate in-region data handling, such as requirements prohibiting cross-border data transfers. Administrators should map cluster deployment locations to applicable jurisdictional requirements and configure cluster boundaries accordingly to maintain compliant data residency posture across distributed environments.",
+    "citations": [
+      "[external: https://bttech.uk/2023/07/03/nsx-autonomous-edge-ha/]",
+      "[external: https://www.allpcb.com/allelectrohub/integrating-edge-computing-with-autonomous-driving]",
+      "[external: https://techdocs.broadcom.com/us/en/vmware-cis/nsx/vmware-nsx/4-2/administration-guide/virtual-private-network-vpn/add-an-autonomous-edge-as-an-l2-vpn-client.html]"
+    ],
+    "rationale": "Gap: No formal mapping between \"autonomous edge cluster\" capabilities and specific enterprise compliance frameworks (e.g., data sovereignty regulations).",
+    "implication": "The documents mention \"regional data sovereignty requirements\" as a use case but do not connect this to specific regulatory frameworks.",
+    "verification_status": "confirmed",
+    "track": "flagged",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "single node holds a complete copy of a given file and that data retrieval depends on coordinated access across the participating nodes in the network.\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: No single node represents a critical path for latency or availability -->\n<!-- SOUR",
+    "new_text": "DDC clusters operate without a single point of failure by design. When data is ingested, the system fragments it and distributes portions across individual storage nodes within the cluster, ensuring no single node holds a complete copy of any given file. Data retrieval is therefore coordinated across multiple participating nodes rather than routed through any one critical path. This distribution model maintains availability across the cluster while reducing redundancy overhead, so the failure or removal of an individual node does not interrupt access to stored data.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: No single node represents a critical path in DDC architecture",
+    "implication": "Claim cited DDC Core Wiki.pdf p.1 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 18,
+    "edit_type": "insertion",
+    "original_context": "tolerated can be observed on next\nscreenshot (the OK requests dropped to 0 and Canceled requests\nincreased after the nodes shutdown).\nDDC Core Wiki 18\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Client request latency didn't change at all after several nodes were turned off -->",
+    "new_text": "When multiple DDC nodes become unavailable, client request latency may remain unchanged because requests are routed through try points that provide access to hierarchical content paths rather than direct node addresses. A client requesting content by path does not resolve individual node availability at the CID level, so the routing layer can continue serving requests through remaining accessible nodes without exposing latency changes to the client. This behavior is a consequence of path-based content addressing, where the client holds access to a path segment without requiring knowledge of the underlying content identifier.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://cdn.prod.website-files.com/65324127b919c1e8fc21a198/65aa4ea7a3b9b7df623dc2f8_Cere%20LitePaper%20V1.0.pdf]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://classic.yarnpkg.com/en/package/@cere-ddc-sdk/ddc]"
+    ],
+    "rationale": "Gap: Client request latency didn't change after several nodes were turned off",
+    "implication": "Claim cited DDC Core Wiki.pdf p.18 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:04:48.614210",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 4,
+    "edit_type": "insertion",
+    "original_context": "| [external: https://forum.finescale.com/t/dragon-1-16-figures-any-good/122245] | [external: https://gkhajduk.github.io/2017-03-09-mixed-models/] -->\n\nIn the 16/48 erasure coding scheme, a DDC cluster tolerates the simultaneous loss of up to 32 storage nodes without data loss. This threshold is der",
+    "new_text": "During node failure events, client read latency in DDC is influenced by whether requested content is available at the CDN layer or must be retrieved from the storage layer. When a CDN node cannot serve cached content, requests are proxied to the storage layer, introducing additional round-trip overhead. Latency outcomes depend on node lifetime estimates and cluster state propagation delays at the time of failure. Quantitative measurements from Milestone 1 simulations are pending publication; the table below will be populated with empirical read latency data once those results are formally recorded.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cs.cornell.edu/people/egs/sqrt-s/doc/TR2006-2025.pdf]",
+      "[external: https://docs.opensearch.org/latest/monitoring-your-cluster/pa/reference/]",
+      "[external: https://dev.to/david_kjerrumgaard_d31d7e/latency-numbers-every-data-streaming-engineer-should-know-h91]"
+    ],
+    "rationale": "Gap: The documents reference a latency table for node failure scenarios but it remains unpopulated.",
+    "implication": "The simulation narrative suggests latency remained stable after retrieval logic updates, but no quantitative proof is published.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "uarantees, rollback procedures, or partial-write behavior without that evidence would risk introducing inaccurate information into your documentation.\n\nTo write this section accurately, please provide internal sources describing DDC's consensus or quorum protocol, write path architecture, or any exi",
+    "new_text": "Edge cluster repair performance benchmarks for 5-node configurations are currently pending publication. Until this data is available, operators should treat SLA targets for fault recovery scenarios as provisional and avoid committing to contractual recovery time objectives based on unverified estimates.\n\nOperators sizing edge cluster deployments can reference the connection limits documented for edge cluster onboarding as a baseline for capacity planning: a maximum of 5000 active HTTP requests, 2048 queued pending requests, and a defined ceiling on simultaneous TCP connections. These parameters constrain throughput during degraded states and should inform conservative SLA modeling until formal repair benchmarks are released.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://traceabledocs.document360.io/docs/protection-edge-cluster-onboarding]",
+      "[external: https://documentation.suse.com/suse-edge/3.5/single-html/edge/edge.html]",
+      "[external: https://learn.microsoft.com/en-us/troubleshoot/windows-server/high-availability/windows-server-failover-cluster-health-service]"
+    ],
+    "rationale": "Gap: Edge cluster repair benchmarks are described as \"pending publication.\"",
+    "implication": "Operators cannot size SLA targets without this data.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q1",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "external: https://vadoc.virginia.gov/files/operating-procedures/800/vadoc-op-830-2.pdf] | [external: https://policy.umn.edu/it/dataclassification] -->\n\n<!-- EDIT-START: Q1 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not describe what happens to in-flight writes when an edge cluster",
+    "new_text": "When a storage or compute node becomes unavailable, the DDC Orchestrator detects the failure and initiates workload redistribution across the remaining healthy nodes in the cluster. This process is governed by assignment logic configured within the Orchestrator, which continuously monitors node state and reallocates tasks without requiring manual intervention.\n\nRedistribution is triggered by node health signals surfaced through the cluster execution layer. The Orchestrator then applies distribution rules to reassign affected workloads to available nodes, maintaining continuity of service. This behavior is a property of the cluster architecture rather than any single application layer.",
+    "citations": [
+      "[internal: DDC from Sergey Poluyan.pdf (21 pages)]",
+      "[external: https://www.red-gate.com/simple-talk/featured/what-is-oracle-rac-and-why-use-it-for-scaling-workloads/]",
+      "[external: https://blog.eclarifire.com/gain-efficiencies-automated-workload-distribution]",
+      "[external: https://www.redwood.com/resource/what-is-workload-automation/]"
+    ],
+    "rationale": "Gap: The documents do not explicitly describe how workloads are \"automatically redistributed\" at the mechanism level (e.g., which protocol component triggers redistribution, what triggers it, how quickly).",
+    "implication": "The claim that workloads are automatically redistributed is stated as a design property without a mechanism description.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "for activity capture, enabling auditors or validators to independently confirm that the client was legitimately authorized at the time of the request.\n\n<!-- EDIT-END: Q3 -->\n\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Individual node operators can observe the content of the fr",
+    "new_text": "Security Comparison Disclaimer\n\nThe security characteristics described in this section reflect DDC's architecture as documented internally and should not be interpreted as independently verified assessments of third-party platforms. Specific claims regarding the security controls of named vendors such as Databricks or Snowflake have not been validated against current product documentation and may not accurately reflect those platforms' current capabilities. Readers should consult vendor documentation directly before drawing comparative conclusions.\n\nRegarding encryption, DDC does not enforce encryption at rest by default. Data stored within a cluster remains in plaintext unless the client application explicitly encrypts it prior to upload. Any documentation stating otherwise should be treated as inaccurate until corrected through a formal review cycle.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://pmc.ncbi.nlm.nih.gov/articles/PMC150178/]",
+      "[external: https://www.nngroup.com/articles/comparison-tables/]",
+      "[external: https://dqops.com/docs/categories-of-data-quality-checks/how-to-reconcile-data-and-detect-differences/]"
+    ],
+    "rationale": "Gap: No explicit comparison table with validated claims about Databricks/Snowflake security controls.",
+    "implication": "The documents generalize about \"centralized platforms\" but do not substantiate specific claims about what those platforms do or do not offer.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "fragmentation is intended to provide. Protocol-level Sybil resistance mechanisms are under active development and are not yet enforced automatically.\n\n<!-- EDIT-END: Q2 -->\n\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: ** No published threat model or penetration test results. -",
+    "new_text": "DDC's threat model addresses compromised storage nodes through client-side encryption, ensuring nodes never process plaintext data and keys are never transmitted to the storage layer. Data fragmentation across nodes provides additional isolation, though subject lineage relationships may indicate overlapping control between nodes, which can reduce the effective isolation this architecture is intended to provide. Protocol-level Sybil resistance mechanisms are under active development and are not yet automatically enforced, representing a residual risk that enterprise teams should account for when evaluating DDC deployments against their own security requirements.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]",
+      "[external: https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem]"
+    ],
+    "rationale": "Gap: No published formal threat model document.",
+    "implication": "Enterprise teams cannot independently verify DDC's security claims against a structured threat analysis.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "rifiable operator diversity should implement out-of-band vetting procedures until protocol-level Sybil mitigation is formally specified and delivered.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Sybil resistance is described as a known gap but no timeline or specification exist",
+    "new_text": "DDC clusters distribute data across multiple nodes as a baseline confidentiality measure; however, this fragmentation-based security model currently relies on deployment-level operator vetting rather than protocol-enforced guarantees. Cryptographic proof of distinct node identities and stake-weighted Sybil resistance mechanisms are not enforced by the DDC core protocol. A single adversarial operator controlling multiple nodes could undermine the confidentiality assumptions implied by fragmentation.\n\nDeployments requiring verifiable operator diversity should implement out-of-band vetting procedures to confirm independent node ownership and operation. Protocol-level Sybil mitigation is under active specification and will be formally documented upon delivery.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cyfrin.io/blog/understanding-sybil-attacks-in-blockchain-and-smart-contracts]",
+      "[external: https://www.mdpi.com/1999-4893/16/1/34]",
+      "[external: https://www.cube.exchange/what-is/sybil-resistance]"
+    ],
+    "rationale": "Gap: Protocol-level Sybil resistance is absent, yet fragmentation is described as a security benefit.",
+    "implication": "Without verified operator independence, fragmentation does not provide the confidentiality benefit implied.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q2",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "d weigh decentralized authorization guarantees against the maturity of compliance tooling currently available in traditional data warehouse offerings.\n\n<!-- EDIT-END: Q2 -->\n\n\nAn autonomous edge cluster in DDC is a cluster capable of independently executing storage, routing, compute, and request-lev",
+    "new_text": "Transport Layer Security (TLS) is not enforced by default across DDC storage and CDN nodes. As a result, data-in-transit confidentiality is not guaranteed unless TLS is explicitly configured for all node communications. Operators deploying DDC in security-sensitive environments should ensure TLS 1.2 or higher is enabled, as earlier versions lack modern protections and are considered insufficient for production use. Note that while DDC enforces cryptographic access control at the protocol level, this does not substitute for transport encryption and should not be interpreted as providing equivalent data-in-transit protection.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cyberark.com/what-is/tls-certificate-risks/]",
+      "[external: https://www.wolfssl.com/broken-ssl-tls-versions-attacks-weaknesses-and-mitigations/]",
+      "[external: https://www.ncsc.gov.uk/guidance/using-tls-to-protect-data]"
+    ],
+    "rationale": "Gap: TLS is not enforced by default, which undermines security comparison claims.",
+    "implication": "Without transport encryption, data-in-transit confidentiality is not guaranteed, contradicting implicit claims of security superiority.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "DDC Core Wiki.pdf",
+    "question_id": "Q3",
+    "page": 66,
+    "edit_type": "insertion",
+    "original_context": "rameters should follow the baseline requirements defined for standard DDC clusters unless a specific edge deployment profile is documented separately.\n\n<!-- EDIT-END: Q1 -->\n\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Nodes can authenticate the client even when customer inform",
+    "new_text": "By default, DDC cluster configurations transmit and store data in plaintext. Operators deploying standard clusters should be aware that this default behavior affects any tooling in the data path, including version-control integrations, build pipelines, and automation gateways, all of which will process content as unencoded character data. Erasure coding and replication constraints apply equally to plaintext configurations; minimum node counts and erasure coding parameters must still satisfy the baseline requirements defined for standard DDC clusters unless a dedicated edge deployment profile has been explicitly documented and applied.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://plaintextconverter.com/what-is-plain-text-format-2/]",
+      "[external: https://en.wikipedia.org/wiki/Plain_text]",
+      "[external: https://news.ycombinator.com/item?id=5718286]"
+    ],
+    "rationale": "Gap: The plaintext-by-default status is documented",
+    "implication": "",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The DEK is not held by any administrative interface -->\n<!-- SOURCES: [internal: DD",
+    "new_text": "DDC does not encrypt data by default. Data passed to the DDC SDK is stored in plaintext unless the calling application encrypts it beforehand. Enterprise deployments requiring confidentiality must implement encryption at the application layer before submitting data to DDC. SDK-integrated encryption is not available in the current release and remains under consideration for a future version.\n\nWhere DDC offers a confidentiality advantage over centralized stacks, that advantage is architectural: key custody remains with the data owner rather than a third-party provider. This distinction applies only when application-layer encryption is already in place.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]",
+      "[external: https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem]"
+    ],
+    "rationale": "Gap: Encryption is plaintext by default, yet several passages describe DDC as providing data confidentiality advantages over centralized stacks.",
+    "implication": "Readers may incorrectly assume DDC provides automatic encryption superiority when the advantage is architectural (key custody model) rather than default behavior.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q2",
+    "page": 56,
+    "edit_type": "insertion",
+    "original_context": "our do not compromise the integrity of the broader system, preserving trustless data transfer guarantees for all participants.\n\n<!-- EDIT-END: Q1 -->\n\n---",
+    "new_text": "DDC does not reject plaintext data uploads at the protocol level, but all data intended for restricted access should be encrypted by the client before upload. The protocol enforces access control through short-lived, client-signed credentials rather than through content inspection or rejection. Because leaked credentials are invalid without the originating client signature, the security boundary is maintained at the authentication layer. Access can be granted or revoked at varying levels of granularity, including per-collection or per-piece operations, giving data owners flexible control without relying on the protocol to filter unencrypted content.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]",
+      "[external: https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem]"
+    ],
+    "rationale": "Gap: The protocol accepts plaintext data uploads without rejection",
+    "implication": "Claim cited DDC Core Wiki.pdf p.1 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "nal: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md] | [external: https://www.cere.network/hub/ddc] -->\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not describe a concrete key backup or recovery procedure. -->\n<!--",
+    "new_text": "Secure Storage Quick Start\n\nTo store encrypted data on DDC, complete the following steps in sequence. First, generate a wallet and fund it with a deposit to cover storage operations. Next, create a bucket to serve as the access-controlled container for your content. Before uploading, apply client-side encryption to your file. Finally, submit the encrypted file to your bucket via the SDK upload method.\n\nAccess control is enforced at the node level, meaning only authorized requests are processed by CDN and storage nodes. Read access can be scoped to an entire bucket, a single piece, or a defined collection of pieces.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://sbk2.co/prepare-consolidated-financial-statements-example/]",
+      "[external: https://clickhelp.com/clickhelp-technical-writing-blog/how-to-write-a-step-by-step-guide/]",
+      "[external: https://www.anaplan.com/blog/preparing-consolidated-financial-statements-step-by-step-guide/]"
+    ],
+    "rationale": "Gap: The documents do not provide a single, consolidated step-by-step guide that walks a user from wallet creation through encrypted file upload in one sequence.",
+    "implication": "Users must piece together information from Get Started, SDK Wiki, and Encrypted Data Access ADR separately.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "round-trip confirmation times and per-transaction overhead cannot be absorbed into the access control path without degrading application performance.\n\n<!-- EDIT-END: Q1 -->\n\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: ** Key loss and seed phrase loss consequences are mentioned",
+    "new_text": "A data wallet is the sr25519 keypair that represents an identity within the DDC network. It consists of three components: a public key, which functions as the on-chain address; a private key, used to sign DDC operations; and a mnemonic seed phrase, used to recover the keypair if access is lost. The terms \"data wallet,\" \"account,\" and \"keypair\" are interchangeable and refer to the same underlying cryptographic identity. This definition is normative across all DDC SDK documentation and supersedes any informal or context-specific variations found elsewhere.",
+    "citations": [
+      "[internal: DDC Client JS SDK Wiki.pdf (11 pages)]",
+      "[external: https://www.quora.com/How-exactly-does-DataWallet-work]",
+      "[external: https://forum.solidproject.org/t/is-data-wallet-the-new-name-for-a-pod-or-something-else/9460]",
+      "[external: https://blog.zooxsmart.com/data-wallet-how-does-a-virtual-wallet-work]"
+    ],
+    "rationale": "Gap: The \"data wallet\" concept is defined repeatedly across multiple documents with slight variations, but no single canonical definition exists.",
+    "implication": "The terms \"data wallet,\" \"account,\" and \"keypair\" are used interchangeably without a clear normative definition.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 1,
+    "edit_type": "insertion",
+    "original_context": "nal: https://github.com/Cerebellum-Network/cere-ddc-sdk-js/blob/main/packages/ddc-client/README.md] | [external: https://www.cere.network/hub/ddc] -->\n\n<!-- EDIT-START: Q3 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The documents do not provide a single, consolidated step-by-step guide that walks a",
+    "new_text": "Seed Phrase Handling\n\nWhen a seed phrase is provided to DdcClient.create(), the SDK derives the corresponding cryptographic key material from it. The seed phrase itself is not persisted to disk or transmitted externally. Security-conscious integrators should treat the seed phrase as sensitive in-process material for the duration of the initialization call and apply standard secure memory practices within their own runtime environment, such as avoiding logging the value and limiting its scope. Once key derivation is complete, retaining the seed phrase in application memory beyond that point is unnecessary and not recommended.",
+    "citations": [
+      "[internal: DDC from Sergey Poluyan.pdf (21 pages)]",
+      "[external: https://strike.me/en/learn/what-is-a-seed-phrase/]",
+      "[external: https://www.blockchain.com/learning-portal/lessons/seed-phrases-explained]",
+      "[external: https://secuxtech.com/blogs/blog/what-is-a-seed-phrase?srsltid=AfmBOopoHreEgOOA10NEIOv-TXnUanx6PJCIbYjvj0qX5TxpvllTXt6F]"
+    ],
+    "rationale": "Gap: The documents do not describe what happens to the seed phrase during SDK initialization \u2014 specifically whether it is held in memory, discarded after key derivation, or persisted.",
+    "implication": "Security-conscious users cannot assess the memory exposure risk of providing a seed phrase to `DdcClient.create()`.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "/is-data-wallet-the-new-name-for-a-pod-or-something-else/9460] | [external: https://blog.zooxsmart.com/data-wallet-how-does-a-virtual-wallet-work] -->\n\nA data wallet is the sr25519 keypair that represents an identity within the DDC network. It consists of three components: a public key, which functi",
+    "new_text": "A data wallet is an sr25519 cryptographic keypair that serves as your identity within the DDC network. It consists of a public key, a private key, and a derived address. The private key is used to sign DDC operations, authorizing actions such as storing and retrieving data on the cluster. The public key and address identify your wallet to other participants in the network. To interact with DDC, you must initialize a client instance with a data wallet, which the SDK accepts as a keypair object.",
+    "citations": [
+      "[internal: DDC Client JS SDK Wiki.pdf (11 pages)]",
+      "[external: https://www.cere.network/hub/ddc]",
+      "[external: https://www.cere.network/blog/cere-network-s-road-ahead-ecosystem-expansion-cdbe9]",
+      "[external: https://www.newsfilecorp.com/release/114279/DeFine-Partners-with-Cere-Network-to-Build-a-Decentralized-and-Secure-NFT-Ecosystem]"
+    ],
+    "rationale": "Gap: A data wallet consists of a private key used to sign DDC operations",
+    "implication": "Claim cited DDC Client JS SDK Wiki.pdf p.4 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "kept off-network. No recovery path exists through DDC infrastructure, so redundant offline backups are the sole safeguard against permanent data loss.\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: Encryption is plaintext by default, yet several passages describe DDC as providing",
+    "new_text": "DDC currently stores data in plaintext by default. Node operators running DDC Core software have direct visibility into the data fragments stored on their individual nodes. Enterprise deployments requiring confidentiality must implement encryption within their own application layer before passing data to the DDC SDK. SDK-integrated encryption is under consideration for a future release but is not available in the current implementation. Developers building privacy-sensitive applications are responsible for encrypting data prior to submission.",
+    "citations": [
+      "[internal: DDC Core Wiki.pdf (66 pages)]",
+      "[external: https://github.com/Cerebellum-Network/docs.cere.network]",
+      "[external: https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8]",
+      "[external: https://blog.polkastarter.com/get-to-know-cere-network/]"
+    ],
+    "rationale": "Gap: The current state of DDC data storage is Plaintext",
+    "implication": "Claim cited Encrypted Data Access and Key Delegation.pdf p.2 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  },
+  {
+    "target_doc": "Encrypted Data Access and Key Delegation.pdf",
+    "question_id": "Q3",
+    "page": 0,
+    "edit_type": "insertion",
+    "original_context": "are configured. Without these measures in place, DDC provides no confidentiality guarantees beyond those of a conventional centralized storage system.\n\n<!-- EDIT-END: Q2 -->\n\n\n<!-- EDIT-START: Q2 | track: auto | \u2705 AUTO-APPLIED -->\n<!-- GAP: The DEK is generated and held exclusively by the client -->",
+    "new_text": "Data in DDC is transmitted and stored in plaintext by default. To protect sensitive content, DDC supports encrypted data access and key delegation, enabling applications to enforce access control at the data layer without relying solely on network-level permissions. Developers handling private or subscription-gated content should apply encryption before writing data to a bucket, ensuring that even if bucket access is misconfigured or a grace period exposes stored objects, the underlying data remains unreadable to unauthorized parties.",
+    "citations": [
+      "[internal: ADR Authentication and Authorization.pdf (14 pages)]",
+      "[external: https://github.com/Cerebellum-Network/docs.cere.network]",
+      "[external: https://cere-network.medium.com/cere-launches-the-ddc-testnet-for-early-testing-63bddf8387c8]",
+      "[external: https://blog.polkastarter.com/get-to-know-cere-network/]"
+    ],
+    "rationale": "Gap: Data is transmitted in plaintext in DDC",
+    "implication": "Claim cited Encrypted Data Access and Key Delegation.pdf p.2 but was not grounded.",
+    "verification_status": "confirmed",
+    "track": "auto",
+    "approved_at": "2026-03-02T01:22:18.569204",
+    "status": "approved"
+  }
+]
