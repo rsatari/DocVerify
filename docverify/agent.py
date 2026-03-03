@@ -164,6 +164,134 @@ def _format_report(report_data):
     return "\n".join(lines)
 
 
+def _build_verification_payload(v: dict) -> dict:
+    """
+    Transform verify_answer() output into the dashboard-expected format.
+
+    verify_answer() returns:
+        {
+            "verified_answer": {...},
+            "claims": [
+                {
+                    "claim_id": "C1", "text": "...",
+                    "grounding": {"verdict": "grounded", "match_ratio": 0.85, ...},
+                    "nli": {"label": "entailment", "score": 0.92, ...},
+                    "cross_llm": {"verdict": "supported", ...},
+                    "final_verdict": "pass"|"fail"|"flag",
+                    "final_confidence": 0.9,
+                    ...
+                }
+            ],
+            "stats": {"total": N, "passed": N, "failed": N, "flagged": N, "verifiers_active": [...]}
+        }
+
+    Dashboard expects:
+        {
+            "claims_total": N, "claims_supported": N, "claims_failed": N, "overrides": N,
+            "grounding": {summary}, "nli": {summary}, "ragas": {summary},
+            "claim_details": [{status, claim/text, grounding_score, nli_score}, ...]
+        }
+    """
+    if not v:
+        return {
+            "claims_total": 0, "claims_supported": 0, "claims_failed": 0,
+            "overrides": 0, "grounding": {}, "nli": {}, "ragas": {},
+            "claim_details": [],
+        }
+
+    stats = v.get("stats", {})
+    claims = v.get("claims", [])
+
+    # Count overrides: claims where grounding found terms but NLI/cross-LLM initially disagreed
+    overrides = 0
+    for c in claims:
+        agg = c.get("aggregation", {})
+        if agg.get("override_applied") or agg.get("grounding_override"):
+            overrides += 1
+
+    # Build grounding summary
+    grounding_verdicts = {}
+    for c in claims:
+        g = c.get("grounding", {})
+        gv = g.get("verdict", "uncited")
+        grounding_verdicts[gv] = grounding_verdicts.get(gv, 0) + 1
+    grounding_summary = {
+        "verdicts": grounding_verdicts,
+        "total_checked": len([c for c in claims if c.get("grounding")]),
+    }
+
+    # Build NLI summary
+    nli_labels = {}
+    nli_scores = []
+    for c in claims:
+        n = c.get("nli")
+        if n:
+            label = n.get("label", "unknown")
+            nli_labels[label] = nli_labels.get(label, 0) + 1
+            score = n.get("score", n.get("entailment_score"))
+            if score is not None:
+                nli_scores.append(score)
+    nli_summary = {
+        "labels": nli_labels,
+        "total_checked": len(nli_scores),
+        "avg_score": round(sum(nli_scores) / len(nli_scores), 3) if nli_scores else None,
+    }
+
+    # Build RAGAS summary (comes from evaluator, not verification — pass through if present)
+    ragas_summary = {}
+
+    # Build claim_details for the dashboard's per-claim list
+    claim_details = []
+    for c in claims[:20]:  # Cap to prevent huge messages
+        verdict = c.get("final_verdict", "unknown")
+        # Map final_verdict to dashboard status
+        if verdict == "pass":
+            status = "supported"
+        elif verdict == "flag":
+            status = "overridden" if c.get("aggregation", {}).get("override_applied") else "flagged"
+        else:
+            status = "failed"
+
+        detail = {
+            "claim_id": c.get("claim_id", ""),
+            "claim": c.get("text", ""),
+            "text": c.get("text", ""),  # Dashboard checks both claim and text
+            "status": status,
+            "final_verdict": verdict,
+            "final_confidence": c.get("final_confidence", 0),
+        }
+
+        # Grounding score (match_ratio from deterministic check)
+        g = c.get("grounding", {})
+        if g:
+            detail["grounding_score"] = g.get("match_ratio", 0)
+            detail["grounding_verdict"] = g.get("verdict", "uncited")
+
+        # NLI score
+        n = c.get("nli")
+        if n:
+            detail["nli_score"] = n.get("score", n.get("entailment_score", 0))
+            detail["nli_label"] = n.get("label", "")
+
+        # Cross-LLM
+        x = c.get("cross_llm")
+        if x:
+            detail["cross_llm_verdict"] = x.get("verdict", "")
+
+        claim_details.append(detail)
+
+    return {
+        "claims_total": stats.get("total", len(claims)),
+        "claims_supported": stats.get("passed", 0),
+        "claims_failed": stats.get("failed", 0),
+        "claims_flagged": stats.get("flagged", 0),
+        "overrides": overrides,
+        "verifiers_active": stats.get("verifiers_active", []),
+        "grounding": grounding_summary,
+        "nli": nli_summary,
+        "ragas": ragas_summary,
+        "claim_details": claim_details,
+    }
 
 
 def docverify_node(state: AgentState) -> dict:
@@ -217,6 +345,15 @@ def docverify_node(state: AgentState) -> dict:
                 v = verifications.get(qid, {})
                 r = routing.get(qid, {})
 
+                # Build verification payload from verify_answer() output
+                # v has: {verified_answer, claims: [...], stats: {total, passed, failed, ...}}
+                verification_payload = _build_verification_payload(v)
+
+                # If evaluator has RAGAS data, inject it into verification payload
+                ragas_data = e.get("ragas", {})
+                if ragas_data:
+                    verification_payload["ragas"] = ragas_data
+
                 q_data = {
                     "question_text": questions.get(qid, ""),
                     "loop": r.get("loop", "A"),
@@ -234,17 +371,8 @@ def docverify_node(state: AgentState) -> dict:
                     "passed": e.get("passed", False),
                     "scores": e.get("scores", {}),
 
-                    # Verification
-                    "verification": {
-                        "grounding": v.get("grounding", {}),
-                        "nli": v.get("nli", {}),
-                        "ragas": v.get("ragas", {}),
-                        "claims_total": v.get("claims_total", 0),
-                        "claims_supported": v.get("claims_supported", 0),
-                        "claims_failed": v.get("claims_failed", 0),
-                        "overrides": v.get("overrides", 0),
-                        "claim_details": v.get("claim_details", [])[:20],  # Cap to prevent huge messages
-                    },
+                    # Verification (now correctly mapped from verify_answer output)
+                    "verification": verification_payload,
                 }
 
                 payload["questions"][qid] = q_data
@@ -256,11 +384,13 @@ def docverify_node(state: AgentState) -> dict:
                 if isinstance(proposed, list):
                     for edit in proposed:
                         edits_list.append({
-                            "target_file": edit.get("target_file", edit.get("file", "")),
-                            "gap_description": edit.get("gap", edit.get("description", edit.get("gap_description", ""))),
-                            "edit_content": edit.get("content", edit.get("edit", edit.get("edit_content", "")))[:500],
-                            "edit_type": edit.get("type", edit.get("edit_type", "addition")),
+                            "target_file": edit.get("target_file", edit.get("target_document", edit.get("file", ""))),
+                            "gap_description": edit.get("gap", edit.get("description", edit.get("gap_description", edit.get("addresses_gap", "")))),
+                            "edit_content": edit.get("suggested_text", edit.get("content", edit.get("edit", edit.get("edit_content", ""))))[:500],
+                            "edit_type": edit.get("change_type", edit.get("type", edit.get("edit_type", "addition"))),
                             "question_id": edit.get("question_id", edit.get("qid", "")),
+                            "priority": edit.get("priority", "P1"),
+                            "requires_human_review": edit.get("requires_human_review", False),
                         })
                 elif isinstance(proposed, dict):
                     for qid_key, qid_edits in proposed.items():

@@ -1,278 +1,110 @@
 {
   "failures": {
     "Q1": {
-      "672639a58d171ea3": {
-        "claim_text": "No single node represents a critical path in DDC architecture",
+      "9a04872adf8114ef": {
+        "claim_text": "If DDC nodes are restarted when the blockchain is temporarily unavailable, they can resume authenticating clients without errors",
         "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"No single node represents a critical path in DDC architecture\" \u2014 this failed verification in a previous run.",
+        "pattern": "AVOID: \"If DDC nodes are restarted when the blockchain is temporarily unavailable, they can resume authenticating clients without errors\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 30,
-        "last_run": 30
+        "first_run": 36,
+        "last_run": 36
       },
-      "ef3f5a439e47f563": {
-        "claim_text": "The protocol enforces a guaranteed level of durability, for example 99.99999%",
+      "82bf559fabf0e26f": {
+        "claim_text": "DDC nodes draw on the locally persisted index rather than requiring a live blockchain connection when restarted during blockchain unavailability",
         "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The protocol enforces a guaranteed level of durability, for example 99.99999%\" \u2014 this failed verification in a previous run.",
+        "pattern": "AVOID: \"DDC nodes draw on the locally persisted index rather than requiring a live blockchain connection when restarted during blockchain unavailability\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 30,
-        "last_run": 30
-      },
-      "7bf59fd02ab0ab28": {
-        "claim_text": "No individual node represents a critical dependency in edge and hybrid clusters",
-        "detail": "Found 3/3 key terms on cited page.",
-        "pattern": "AVOID: \"No individual node represents a critical dependency in edge and hybrid clusters\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 30,
-        "last_run": 30
-      },
-      "7ee0eebd3377070c": {
-        "claim_text": "Client request latency didn't change after several nodes were turned off",
-        "detail": "Found 3/3 key terms on cited page.",
-        "pattern": "AVOID: \"Client request latency didn't change after several nodes were turned off\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 30,
-        "last_run": 30
-      },
-      "151e22d59ce5a725": {
-        "claim_text": "The authentication gater uses bucket and customer indexes persisted on disk",
-        "detail": "Found 2/2 key terms on cited page.",
-        "pattern": "AVOID: \"The authentication gater uses bucket and customer indexes persisted on disk\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 30,
-        "last_run": 30
-      },
-      "02b51b16f63b0c0d": {
-        "claim_text": "On-chain key registry was explicitly rejected due to latency and cost constraints incompatible with edge environments",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"On-chain key registry was explicitly rejected due to latency and cost constraints incompatible with edge environments\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 30,
-        "last_run": 30
+        "first_run": 36,
+        "last_run": 36
       }
     },
     "Q2": {
-      "f50e244d2e688f65": {
-        "claim_text": "The DEK never crosses the client boundary",
+      "9bfe923cfb88ea8b": {
+        "claim_text": "DDC nodes never process or receive user seed phrases",
         "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The DEK never crosses the client boundary\" \u2014 this failed verification in a previous run.",
+        "pattern": "AVOID: \"DDC nodes never process or receive user seed phrases\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 29,
-        "last_run": 29
+        "first_run": 34,
+        "last_run": 34
       },
-      "e3d421de407fc354": {
-        "claim_text": "The DEK is not included in upload requests",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The DEK is not included in upload requests\" \u2014 this failed verification in a previous run.",
+      "fc2da77dcaa3bd78": {
+        "claim_text": "DDC clusters operate without a centralized coordinator",
+        "detail": "Claim asserts 'without a centralized' but this phrase does not appear on the cited page (or adjacent pages).",
+        "pattern": "DO NOT cite this claim without verifying the page number: \"DDC clusters operate without a centralized coordinator\"",
         "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "db9222f5436ade37": {
-        "claim_text": "The DEK is not derivable from stored ciphertext",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The DEK is not derivable from stored ciphertext\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "106340f88d2396fc": {
-        "claim_text": "The DEK is not held by any cluster node",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The DEK is not held by any cluster node\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "8116e08c152b9b4f": {
-        "claim_text": "The DEK is not held by any storage layer",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The DEK is not held by any storage layer\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "b617c1d479e4428b": {
-        "claim_text": "The DEK is not held by any administrative interface",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The DEK is not held by any administrative interface\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "daa9f3f472e5d3b6": {
-        "claim_text": "No cluster component ever receives the DEK",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"No cluster component ever receives the DEK\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "9ea5cf361d26b166": {
-        "claim_text": "No cluster-side operation can produce plaintext from stored data",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"No cluster-side operation can produce plaintext from stored data\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "315af2f91ead86b0": {
-        "claim_text": "No cluster-level key recovery mechanism exists within DDC",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"No cluster-level key recovery mechanism exists within DDC\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "382eb8cbe56eb034": {
-        "claim_text": "DDC nodes never process user seed phrases",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"DDC nodes never process user seed phrases\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "9129cf6a85bace97": {
-        "claim_text": "DDC nodes never receive user seed phrases",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"DDC nodes never receive user seed phrases\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "f500131c0a63bae4": {
-        "claim_text": "Requests cannot be forged",
-        "detail": "Found 3/3 key terms on cited page.",
-        "pattern": "AVOID: \"Requests cannot be forged\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "00d235149885596e": {
-        "claim_text": "All access decisions in DDC are grounded in cryptographically verifiable data",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"All access decisions in DDC are grounded in cryptographically verifiable data\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 29,
-        "last_run": 29
-      },
-      "b05e440d7768bb75": {
-        "claim_text": "The protocol accepts plaintext data uploads without rejection",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The protocol accepts plaintext data uploads without rejection\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 31,
-        "last_run": 31
-      },
-      "212509462aa9f8ba": {
-        "claim_text": "Data is transmitted in plaintext between clients and storage nodes",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"Data is transmitted in plaintext between clients and storage nodes\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 31,
-        "last_run": 31
+        "first_run": 37,
+        "last_run": 37
       }
     },
     "Q3": {
-      "92708df29dadbda2": {
-        "claim_text": "The signature is computed using sr25519 over concatenated fields: requestId, bucketId, timestamp, and userPublicKey",
+      "71441e5cd1cd1fab": {
+        "claim_text": "The terms 'data wallet' and 'account' are interchangeable and refer to the same underlying keypair",
+        "detail": "Found 3/3 key terms on cited page.",
+        "pattern": "AVOID: \"The terms 'data wallet' and 'account' are interchangeable and refer to the same underlying keypair\" \u2014 this failed verification in a previous run.",
+        "count": 1,
+        "first_run": 35,
+        "last_run": 35
+      },
+      "692d47863d1e1c4f": {
+        "claim_text": "The bucket owner holds root access to that bucket, meaning they retain full administrative control over its contents and access policies",
         "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The signature is computed using sr25519 over concatenated fields: requestId, bucketId, timestamp, and userPublicKey\" \u2014 this failed verification in a previous run.",
-        "count": 2,
-        "first_run": 23,
-        "last_run": 28
-      },
-      "3cb04029f001395b": {
-        "claim_text": "The data wallet output includes an address",
-        "detail": "None of the 1 key terms found on cited page 3.",
-        "pattern": "DO NOT cite this claim without verifying the page number: \"The data wallet output includes an address\"",
+        "pattern": "AVOID: \"The bucket owner holds root access to that bucket, meaning they retain full administrative control over its contents and access policies\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 28,
-        "last_run": 28
+        "first_run": 35,
+        "last_run": 35
       },
-      "c6e815e33028b7f4": {
-        "claim_text": "The SDK does not surface a descriptive error when DDC deposit is insufficient",
-        "detail": "Found 2/2 key terms on cited page.",
-        "pattern": "AVOID: \"The SDK does not surface a descriptive error when DDC deposit is insufficient\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 28,
-        "last_run": 28
-      },
-      "e508cda422d0923e": {
-        "claim_text": "The accurate characterization is 'Client-side only; plaintext by default'",
-        "detail": "Found 2/2 key terms on cited page.",
-        "pattern": "AVOID: \"The accurate characterization is 'Client-side only; plaintext by default'\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 28,
-        "last_run": 28
-      },
-      "dea43b8d851f42b8": {
-        "claim_text": "The DEK is generated and held exclusively by the client",
+      "22776edcd7300421": {
+        "claim_text": "In the 16/48 scheme, any 16 of 48 chunks are sufficient to reconstruct the original data",
         "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The DEK is generated and held exclusively by the client\" \u2014 this failed verification in a previous run.",
+        "pattern": "AVOID: \"In the 16/48 scheme, any 16 of 48 chunks are sufficient to reconstruct the original data\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 28,
-        "last_run": 28
+        "first_run": 35,
+        "last_run": 35
       },
-      "f2e7b7e0fdc56221": {
-        "claim_text": "The DEK is never transmitted to or stored by the DDC cluster",
-        "detail": "Found 2/2 key terms on cited page.",
-        "pattern": "AVOID: \"The DEK is never transmitted to or stored by the DDC cluster\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 28,
-        "last_run": 28
-      },
-      "c235552ce2fdd679": {
-        "claim_text": "The cluster cannot decrypt stored content on behalf of any party, including Cere Network operators",
-        "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"The cluster cannot decrypt stored content on behalf of any party, including Cere Network operators\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 28,
-        "last_run": 28
-      },
-      "4f464c09c086fe33": {
-        "claim_text": "A data wallet consists of a private key used to sign DDC operations",
-        "detail": "Found 2/2 key terms on cited page.",
-        "pattern": "AVOID: \"A data wallet consists of a private key used to sign DDC operations\" \u2014 this failed verification in a previous run.",
-        "count": 1,
-        "first_run": 32,
-        "last_run": 32
-      },
-      "2732e0c973e9e3c0": {
-        "claim_text": "A data wallet consists of a mnemonic seed phrase used to recover the keypair if access is lost",
+      "7f3ef1dbc13ff4ce": {
+        "claim_text": "Access to encrypted data stored in DDC is permanently and irrecoverably lost if the associated seed phrase or Data Encryption Key (DEK) is lost",
         "detail": "Found 4/4 key terms on cited page.",
-        "pattern": "AVOID: \"A data wallet consists of a mnemonic seed phrase used to recover the keypair if access is lost\" \u2014 this failed verification in a previous run.",
+        "pattern": "AVOID: \"Access to encrypted data stored in DDC is permanently and irrecoverably lost if the associated seed phrase or Data Encryption Key (DEK) is lost\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 32,
-        "last_run": 32
+        "first_run": 35,
+        "last_run": 35
       },
-      "568d8e1e3d0cd90d": {
-        "claim_text": "Only pallet based access is revocable",
+      "157e85ea9a5cf9bc": {
+        "claim_text": "The data wallet generation output includes an address",
+        "detail": "None of the 1 key terms found on cited page 3.",
+        "pattern": "DO NOT cite this claim without verifying the page number: \"The data wallet generation output includes an address\"",
+        "count": 1,
+        "first_run": 38,
+        "last_run": 38
+      },
+      "df20e3c7a04373ef": {
+        "claim_text": "The bucket owner is automatically granted root access to that bucket",
         "detail": "Found 1/1 key terms on cited page.",
-        "pattern": "AVOID: \"Only pallet based access is revocable\" \u2014 this failed verification in a previous run.",
+        "pattern": "AVOID: \"The bucket owner is automatically granted root access to that bucket\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 32,
-        "last_run": 32
+        "first_run": 38,
+        "last_run": 38
       },
-      "2243d6d8382416b6": {
-        "claim_text": "The current state of DDC data storage is Plaintext",
-        "detail": "Found 2/2 key terms on cited page.",
-        "pattern": "AVOID: \"The current state of DDC data storage is Plaintext\" \u2014 this failed verification in a previous run.",
+      "423a072408209b90": {
+        "claim_text": "The bucket owner can perform all operations on the bucket, including read, write, and delete",
+        "detail": "Found 1/1 key terms on cited page.",
+        "pattern": "AVOID: \"The bucket owner can perform all operations on the bucket, including read, write, and delete\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 32,
-        "last_run": 32
+        "first_run": 38,
+        "last_run": 38
       },
-      "12902d5820dbf56f": {
-        "claim_text": "Data is transmitted in plaintext in DDC",
-        "detail": "Found 2/2 key terms on cited page.",
-        "pattern": "AVOID: \"Data is transmitted in plaintext in DDC\" \u2014 this failed verification in a previous run.",
+      "0ea13ed428389de3": {
+        "claim_text": "To retrieve data: const fileResponse = await client.read(uri)",
+        "detail": "Found 2/3 key terms on cited page.",
+        "pattern": "AVOID: \"To retrieve data: const fileResponse = await client.read(uri)\" \u2014 this failed verification in a previous run.",
         "count": 1,
-        "first_run": 32,
-        "last_run": 32
+        "first_run": 38,
+        "last_run": 38
       }
     }
   },
   "meta": {
-    "total_runs": 32,
-    "last_updated": "2026-03-02T01:22:18"
+    "total_runs": 38,
+    "last_updated": "2026-03-03T18:07:48"
   }
 }
