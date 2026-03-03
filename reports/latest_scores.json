@@ -1,0 +1,769 @@
+{
+  "Q1": {
+    "question_id": "Q1",
+    "overall_score": 0.865,
+    "passed": true,
+    "scores": {
+      "grounded_correctness": 0.9075,
+      "completeness": 0.95,
+      "precision": 0.7,
+      "clarity": 0.9,
+      "citation_quality": 0.78
+    },
+    "claim_verification": [
+      {
+        "claim": "DDC's peer-to-peer design ensures resilience through data redundancy (replication and erasure coding), automatic routing around failed nodes, and a data repair mechanism that redistributes data when nodes leave the cluster.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0022",
+          "p19-0064",
+          "p35-0070"
+        ],
+        "notes": "Replication/erasure coding and routing around failures are explicitly stated; repair on node leaving is shown in simulation; availability requirement is stated."
+      },
+      {
+        "claim": "Data is distributed across multiple nodes using replication for small pieces and erasure coding for pieces larger than 16 KB.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0022"
+        ],
+        "notes": "Directly stated in the DDC overview."
+      },
+      {
+        "claim": "Temporary outage: system routes around failures automatically; permanent loss: data survives if enough copies/shares remain.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0022"
+        ],
+        "notes": "Directly stated."
+      },
+      {
+        "claim": "Erasure coding encodes data into N shares where any K are required to recover the original block; durability can increase without increasing expansion factor because risk is spread across more nodes.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0038"
+        ],
+        "notes": "Matches the erasure coding description and durability comparison rationale."
+      },
+      {
+        "claim": "When a node is removed, metadata is distributed across other nodes and segments/merkle trees are repaired; after node leaves, other nodes don't send requests to the failed node; removed node can't connect due to p2p authentication; repair is triggered.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p19-0064"
+        ],
+        "notes": "All elements are explicitly in the simulation scenario/execution text."
+      },
+      {
+        "claim": "The system uses DHT for node discovery with replication factor 5, key space length 256, and concurrency 3; nodes get list of nodes from smart contract on startup and use discovered nodes as bootstrap; if none found, use self as bootstrap.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p10-0060"
+        ],
+        "notes": "Directly specified in the DHT setup spec."
+      },
+      {
+        "claim": "Non-functional requirements state client data is always available even when multiple nodes leave and the protocol guarantees durability (e.g., 99.99999%) and tolerates shutdowns/misbehavior.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p35-0070"
+        ],
+        "notes": "Directly stated in NFR reliability section."
+      },
+      {
+        "claim": "Each DDC cluster is a 'complete, independent cloud' replacing VPC/S3/compute with built-in on-chain verification; unified stack with auditable operations verified on-chain.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0022"
+        ],
+        "notes": "Directly stated in the DDC overview."
+      },
+      {
+        "claim": "DDC can function even when blockchain connectivity is unavailable because storage/cache nodes use a nodes index persisted on disk; auth gater can authenticate using bucket/customer indexes persisted on disk when blockchain is unavailable.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p32-0069"
+        ],
+        "notes": "Acceptance criteria explicitly describe restart/function without blockchain and auth gater behavior."
+      },
+      {
+        "claim": "DDC supports regional & industry optimization and clusters can be optimized for specific data types and regions (e.g., New Zealand low-latency, Central Asia video streaming).",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0022",
+          "p4-0023"
+        ],
+        "notes": "Both chunks describe regional/data-type optimization with the same examples."
+      },
+      {
+        "claim": "DDC enables 'Edge-Native AI' and autonomous, real-time agentic workflows by moving compute to the data, reducing latency.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0022"
+        ],
+        "notes": "This is stated as a key benefit; however it is marketing-level and not tied to specific mechanisms beyond the statement."
+      },
+      {
+        "claim": "DDC clusters support configurable SLAs; smaller clusters (e.g., 5 nodes) can be created with custom redundancy parameters and thresholds set on-chain.",
+        "status": "overstated",
+        "evidence_chunks": [
+          "p30-0068",
+          "p32-0069"
+        ],
+        "notes": "Docs describe this as a plan/AC for configurability and that smaller clusters can be created, but not as a current, generally available capability. The answer presents it as present-tense capability."
+      },
+      {
+        "claim": "The protocol is designed to accept untrusted nodes with security protections: internal communication protected; operations authorized; internal data authenticated by hashes; malicious providers can't increase income or hurt cluster.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p30-0068",
+          "p32-0069"
+        ],
+        "notes": "These are stated as DoD/AC for milestones; the answer frames as design/criteria, which is consistent."
+      },
+      {
+        "claim": "DDC's erasure coding/data distribution means a malicious actor would need control over a significant portion of the cluster to reconstruct a file; client-side encryption ensures only the client can decrypt and node operators cannot access plaintext.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0022",
+          "p4-0023"
+        ],
+        "notes": "Both claims are explicitly stated in the security sections."
+      },
+      {
+        "claim": "Proof of storage auditing is a planned/roadmap item and described as a milestone deliverable.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p30-0068",
+          "p32-0069"
+        ],
+        "notes": "Milestone text describes proof-of-storage/audits as planned with DoD/AC."
+      },
+      {
+        "claim": "Repair mechanism simulation revealed issues (metrics skew, CDN nodes incorrectly triggering repair) but resolution status is unclear.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p19-0064"
+        ],
+        "notes": "Chunk lists issues found; no resolution is provided."
+      }
+    ],
+    "required_concepts_coverage": [
+      {
+        "concept": "DHT-based peer discovery and self-bootstrap (nodes can use themselves as bootstrap)",
+        "status": "present",
+        "notes": "Covered in the DHT paragraph with config and self-bootstrap behavior, citing p10-0060."
+      },
+      {
+        "concept": "Node failure tolerance via erasure coding (K/N scheme, Dragon 1: 16/48)",
+        "status": "partial",
+        "notes": "Explains K/N concept generally (p2-0038) but does not mention Dragon 1 16/48 specifically (not present in provided chunks)."
+      },
+      {
+        "concept": "Data replication for small pieces, erasure coding for large pieces",
+        "status": "present",
+        "notes": "Explicitly stated with 16KB threshold, citing p2-0022."
+      },
+      {
+        "concept": "Automatic data repair when nodes join or leave the cluster",
+        "status": "present",
+        "notes": "Node leaving simulation and repair triggered are described, citing p19-0064."
+      },
+      {
+        "concept": "Adaptive routing around slow/failed nodes",
+        "status": "present",
+        "notes": "Routes around failures automatically is stated, citing p2-0022."
+      },
+      {
+        "concept": "Disk-persisted indexes for blockchain-independent operation",
+        "status": "present",
+        "notes": "Nodes index and auth gater indexes persisted on disk for blockchain unavailability, citing p32-0069."
+      },
+      {
+        "concept": "Each cluster as a complete, independent cloud",
+        "status": "present",
+        "notes": "Directly quoted/used from p2-0022."
+      },
+      {
+        "concept": "Regional optimization (clusters for specific data types and regions)",
+        "status": "present",
+        "notes": "Covered with examples and citations p2-0022 and p4-0023."
+      }
+    ],
+    "forbidden_claims_found": [
+      "Implied current production capability of 'configurable SLAs' and 'smaller clusters (e.g., 5 nodes) can be created' without clearly marking it as planned/AC; this risks being interpreted as a current production fact."
+    ],
+    "outside_knowledge_detected": [],
+    "failures": [
+      "Overstatement of SLA configurability/small-cluster support as an existing capability rather than clearly a milestone plan/acceptance criteria (p30-0068/p32-0069). This reduces grounded_correctness below the pass threshold."
+    ],
+    "missing_topics": [
+      "Dragon 1 specific erasure coding parameters (16/48) are not provided in the evidence chunks and therefore are not included; if required, docs need to supply it."
+    ],
+    "suggested_doc_improvements": [
+      {
+        "priority": "P1",
+        "description": "Add a clear 'current vs planned' capability matrix for cluster SLA configurability (replication/erasure parameters, thresholds) and small-cluster support.",
+        "reason": "Prevents answers from accidentally presenting milestone plans/AC as already-available production features."
+      },
+      {
+        "priority": "P2",
+        "description": "Document concrete, cluster-specific redundancy parameters for named clusters (e.g., Dragon 1 K/N) in an easily citable location.",
+        "reason": "Enables precise, grounded explanations of resilience tied to real deployments rather than generic K/N descriptions."
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 11156,
+      "output_tokens": 2298
+    },
+    "ragas": {
+      "faithfulness": 0.963,
+      "answer_relevancy": null,
+      "ragas_available": true,
+      "llm_model": "gpt-4o",
+      "error": null
+    }
+  },
+  "Q2": {
+    "question_id": "Q2",
+    "overall_score": 0.7634,
+    "passed": false,
+    "scores": {
+      "grounded_correctness": 0.8059,
+      "completeness": 0.71,
+      "precision": 0.7,
+      "clarity": 0.86,
+      "citation_quality": 0.72
+    },
+    "claim_verification": [
+      {
+        "claim": "DDC replaces traditional infrastructure like VPC, S3, and compute services in one decentralized system with built-in on-chain verification.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p2-0022"
+        ],
+        "notes": "Directly stated in p2-0022."
+      },
+      {
+        "claim": "Every operation is auditable and verified on-chain; DDC shifts trust to something you can verify rather than assume.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p2-0022"
+        ],
+        "notes": "Matches the wording in p2-0022."
+      },
+      {
+        "claim": "DAC is a trust layer that captures real-time traffic and compute metrics and serves as the verified data source for blockchain-level inspection and automated payouts.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p1-0054",
+          "chunk:p4-0023"
+        ],
+        "notes": "Stated in both p1-0054 and p4-0023."
+      },
+      {
+        "claim": "DDC uses replication for small pieces and erasure coding for pieces larger than 16KB.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p2-0022"
+        ],
+        "notes": "Explicitly stated in p2-0022."
+      },
+      {
+        "claim": "Data is split into fragments across nodes; to reconstruct a file an attacker needs control over a significant portion of the cluster.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p2-0022",
+          "chunk:p4-0023"
+        ],
+        "notes": "Explicitly stated in both p2-0022 and p4-0023."
+      },
+      {
+        "claim": "Client-side encryption is advised; user controls keys; even node operators cannot access plaintext content.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p4-0023"
+        ],
+        "notes": "Explicitly stated in p4-0023."
+      },
+      {
+        "claim": "Unlike a centralized cloud provider that manages encryption keys (and could theoretically access data), DDC's model puts key control entirely in the client's hands.",
+        "status": "unsupported",
+        "evidence_chunks": [
+          "chunk:p4-0023"
+        ],
+        "notes": "Docs state DDC client-side encryption and key control, but do not make claims about how AWS/Azure/Databricks/Snowflake manage keys or what they can access."
+      },
+      {
+        "claim": "DDC provides robust access control through bucket permissions (private/public) and owner-based authentication.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p2-0022",
+          "chunk:p4-0023"
+        ],
+        "notes": "Explicitly stated in both chunks."
+      },
+      {
+        "claim": "SDK authentication: requests are signed with a user key derived from seed/wallet; nodes verify; authorization enforced based on bucket permissions and on-chain customer/bucket state.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p2-0042"
+        ],
+        "notes": "Directly stated in p2-0042."
+      },
+      {
+        "claim": "DDC uses a recursive JWT-like signed token chain for authorization.",
+        "status": "unsupported",
+        "evidence_chunks": [
+          "chunk:p2-0042",
+          "chunk:p2-0047"
+        ],
+        "notes": "Evidence mentions signing requests with a user key and discusses auth considerations, but does not describe a JWT-like recursive token chain."
+      },
+      {
+        "claim": "Piece segment authentication (range requests) protects against receiving corrupted/incorrect data from malicious 3rd party nodes.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p45-0074",
+          "chunk:p47-0075"
+        ],
+        "notes": "Explicitly stated in milestone delivery set 4."
+      },
+      {
+        "claim": "Milestone 4: internal communication protected; each operation authorized; internal data authenticated by hashes; malicious node providers can't increase income dishonestly or hurt the cluster.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p32-0069"
+        ],
+        "notes": "Stated as DoD/AC for milestone 4 in p32-0069 (aspirational/roadmap, but the answer frames it as 'Milestone 4 specifies', which is accurate)."
+      },
+      {
+        "claim": "System achieves security through automated smart contract governance, real-time network monitoring, and strict SLA adherence.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p4-0023"
+        ],
+        "notes": "Stated in p4-0023."
+      },
+      {
+        "claim": "Resource Manager ensures strict SLA adherence; Storage Layer maintains strict data sovereignty.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p1-0054"
+        ],
+        "notes": "Stated in p1-0054."
+      },
+      {
+        "claim": "DDC enables private AI execution at the edge (e.g., Cef.ai) and moves compute to the data rather than data to the cloud, reducing exposure surface.",
+        "status": "overstated",
+        "evidence_chunks": [
+          "chunk:p2-0022"
+        ],
+        "notes": "Docs support 'private AI execution' and 'moves compute to the data'. The additional inference 'reducing the exposure surface' is not stated in evidence."
+      },
+      {
+        "claim": "SDK-integrated key management with delegated access grants is in development; client-side encryption is available manually.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p4-0023"
+        ],
+        "notes": "Explicitly stated in p4-0023."
+      },
+      {
+        "claim": "DDC audits stored data via proof of storage; protocol detects loss/malicious non-storage and repairs data; malicious nodes are slashed and removed.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p32-0069"
+        ],
+        "notes": "Stated as milestone 4 DoD/AC; again roadmap/aspirational but accurately attributed."
+      },
+      {
+        "claim": "DAC can detect malicious nodes and remove them from the network.",
+        "status": "supported",
+        "evidence_chunks": [
+          "chunk:p47-0075"
+        ],
+        "notes": "Explicitly stated in p47-0075."
+      },
+      {
+        "claim": "Multi-provider infrastructure distribution (testnet across 5+ providers).",
+        "status": "unsupported",
+        "evidence_chunks": [
+          "chunk:p45-0074"
+        ],
+        "notes": "Evidence mentions running a local cluster with 5 storage nodes + 1 blockchain node via docker-compose, but does not state '5+ providers' or multi-provider distribution."
+      },
+      {
+        "claim": "The documents do not describe specific security architectures of Databricks, Snowflake, AWS, or Azure for direct technical comparison.",
+        "status": "supported",
+        "evidence_chunks": [],
+        "notes": "Correct meta-observation: no provided chunks contain competitor architecture details."
+      }
+    ],
+    "required_concepts_coverage": [
+      {
+        "concept": "Client-side encryption (user controls keys, nodes can't read plaintext)",
+        "status": "present",
+        "notes": "Covered under 'Client-Side Encryption' with citation to chunk:p4-0023."
+      },
+      {
+        "concept": "Current limitation: data stored/transmitted in plaintext by default",
+        "status": "missing",
+        "notes": "Answer notes encryption can be encrypted or unencrypted, but does not clearly state the rubric-required limitation that plaintext is the default for stored/transmitted data."
+      },
+      {
+        "concept": "Erasure coding distributes data so no single node holds complete files",
+        "status": "present",
+        "notes": "Covered under 'Data Distribution and Fragmentation' citing chunk:p2-0022 and chunk:p4-0023."
+      },
+      {
+        "concept": "On-chain verification via DAC (trust layer for traffic/compute metrics)",
+        "status": "present",
+        "notes": "Covered under 'Verifiable Trust' and DAC description citing chunk:p2-0022, chunk:p1-0054, chunk:p4-0023."
+      },
+      {
+        "concept": "Recursive JWT-like signed token chain for authorization",
+        "status": "missing",
+        "notes": "Answer describes request signing (chunk:p2-0042) but does not provide evidence for JWT-like recursive token chain; concept not supported by provided chunks."
+      },
+      {
+        "concept": "Multi-provider infrastructure distribution (testnet across 5+ providers)",
+        "status": "missing",
+        "notes": "Answer does not substantiate this with evidence; provided chunks do not mention '5+ providers'."
+      },
+      {
+        "concept": "Contrast with traditional cloud: verify rather than assume trust",
+        "status": "present",
+        "notes": "Explicitly covered with chunk:p2-0022."
+      }
+    ],
+    "forbidden_claims_found": [],
+    "outside_knowledge_detected": [
+      "Comparative statement about centralized cloud providers managing encryption keys and being able to access data (not in evidence).",
+      "Security inference that moving compute to data 'reduces exposure surface' (not in evidence)."
+    ],
+    "failures": [
+      "Introduces non-evidenced required concept: 'Recursive JWT-like signed token chain for authorization' is asserted but not supported by provided chunks.",
+      "Claims multi-provider distribution (5+ providers) without evidence in provided chunks."
+    ],
+    "missing_topics": [
+      "Explicitly stating the current limitation that data is plaintext by default (stored/transmitted) unless client-side encryption is used.",
+      "Evidence-backed description of any JWT-like/recursive token authorization mechanism (not present in provided chunks).",
+      "Evidence-backed multi-provider distribution details (not present in provided chunks)."
+    ],
+    "suggested_doc_improvements": [
+      {
+        "priority": "P0",
+        "description": "Add explicit documentation of the default data security posture (whether data is plaintext at rest/in transit by default, and what is encrypted automatically vs only via client-side encryption).",
+        "reason": "The rubric requires clarity on plaintext-by-default limitation; current chunks only say data can be encrypted or unencrypted."
+      },
+      {
+        "priority": "P1",
+        "description": "Document the exact authorization token format/flow (e.g., whether there is a JWT-like token chain, how tokens are constructed/validated, and how it relates to request signing).",
+        "reason": "Current evidence only mentions request signing and bucket permissions; it does not support token-chain claims."
+      },
+      {
+        "priority": "P1",
+        "description": "Provide an explicit description of infrastructure/provider distribution for testnet/mainnet (number of independent providers, how nodes are hosted, and threat model implications).",
+        "reason": "The evaluation rubric expects multi-provider distribution; provided chunks do not substantiate it."
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 11217,
+      "output_tokens": 2541
+    },
+    "ragas": {
+      "faithfulness": 0.9318,
+      "answer_relevancy": null,
+      "ragas_available": true,
+      "llm_model": "gpt-4o",
+      "error": null
+    }
+  },
+  "Q3": {
+    "question_id": "Q3",
+    "overall_score": 0.8083,
+    "passed": true,
+    "scores": {
+      "grounded_correctness": 0.9145,
+      "completeness": 0.7,
+      "precision": 0.7,
+      "clarity": 0.85,
+      "citation_quality": 0.75
+    },
+    "claim_verification": [
+      {
+        "claim": "To store data on a DDC cluster, you initialize the DDC Client SDK with your wallet's mnemonic seed phrase, create a bucket on a cluster, and upload data to that bucket.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p6-0035",
+          "p6-0043"
+        ],
+        "notes": "SDK/CLI examples show creating client with seed, creating bucket, and storing a file."
+      },
+      {
+        "claim": "The account used must have a positive CERE token balance and a DDC deposit.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p6-0043",
+          "p6-0035"
+        ],
+        "notes": "Both chunks state positive balance and deposit requirements; p6-0035 shows checking deposit and depositing."
+      },
+      {
+        "claim": "client.store() returns a content identifier (CID).",
+        "status": "supported",
+        "evidence_chunks": [
+          "p6-0035"
+        ],
+        "notes": "Example logs 'with CID' from fileUri.cid after client.store()."
+      },
+      {
+        "claim": "An alternative low-level approach uses StorageNode.storePiece(bucketId, piece) to get back a CID.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p6-0043"
+        ],
+        "notes": "Low-level API example shows storePiece returning cid."
+      },
+      {
+        "claim": "For private buckets, you generate an access token using client.grantAccess(... operations: [GET], pieceCid: ...).",
+        "status": "supported",
+        "evidence_chunks": [
+          "p6-0035"
+        ],
+        "notes": "Exactly shown in the snippet."
+      },
+      {
+        "claim": "The data is secured through erasure coding for redundancy.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p4-0023",
+          "p3-0039"
+        ],
+        "notes": "Docs explicitly describe erasure coding distribution and redundancy; p3-0039 discusses durability parameters."
+      },
+      {
+        "claim": "DDC provides robust access control through bucket permissions (private/public) and owner-based authentication.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p4-0023"
+        ],
+        "notes": "Stated verbatim in p4-0023."
+      },
+      {
+        "claim": "Pallet-based (blockchain) access control: bucket owner has root access stored in the pallet; pallet can manage access control lists.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p5-0049"
+        ],
+        "notes": "Matches ADR text."
+      },
+      {
+        "claim": "DDC uses recursive JWT-like signed token chains for authorization, where the first token is issued by a client with pallet-level access and the last token is signed by the requesting client.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p7-0051",
+          "p5-0049",
+          "p13-0053"
+        ],
+        "notes": "Directly described as recursive JWT-like trust chain secured by pallet root."
+      },
+      {
+        "claim": "Each link in the trust chain has a signature that secures the whole chain and it 'can't be broken'.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p13-0053"
+        ],
+        "notes": "Phrase appears in consequences section."
+      },
+      {
+        "claim": "Trust chain roots are revocable on pallet level, meaning access can be revoked to all chains issued by that root in one operation.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p13-0053",
+          "p11-0052"
+        ],
+        "notes": "p13-0053 states this; p11-0052 notes only pallet-based access is revocable."
+      },
+      {
+        "claim": "Token specification includes subject, canDelegate, bucketId, operations (PUT/GET/DELETE), expiresAt, and pieceCid; each next token must have <= privileges and expire earlier or same time.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p7-0051"
+        ],
+        "notes": "All fields and constraints are in the .proto excerpt."
+      },
+      {
+        "claim": "Client-side encryption is advised for sensitive data; encrypting before upload ensures only you can decrypt and even node operators cannot access plaintext.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p4-0023"
+        ],
+        "notes": "Stated explicitly."
+      },
+      {
+        "claim": "In the current (unencrypted) flow, data is stored and transmitted in plaintext; in the target (encrypted) flow, only ciphertext passes through DDC nodes.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p2-0001"
+        ],
+        "notes": "Diagram text states plaintext problem and encrypted target."
+      },
+      {
+        "claim": "The encryption system uses AES-256-GCM for data encryption, X25519 (ECDH) for key exchange, HKDF-SHA256 for key derivation, and Ed25519 for signing.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p47-0018",
+          "p11-0007"
+        ],
+        "notes": "p47-0018 lists cryptographic choices; p11-0007 shows AES-256 and X25519 usage in flow."
+      },
+      {
+        "claim": "Storage nodes verify encryption grants by checking delegation depth constraints, operations subset validity, TTL constraints, key references (KES), and derivation proofs.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p41-0016"
+        ],
+        "notes": "Verification steps are enumerated in code."
+      },
+      {
+        "claim": "Threat mitigations include: compromised storage nodes (nodes never see plaintext), key theft (keys never transmitted in plaintext; always wrapped via ECDH), replay attacks (timestamps and nonces), privilege escalation (constraint validation), agent key leakage (short-lived scoped derived keys).",
+        "status": "supported",
+        "evidence_chunks": [
+          "p47-0018"
+        ],
+        "notes": "Threat model table lists these mitigations."
+      },
+      {
+        "claim": "CID is content-addressed (based on cryptographic hash).",
+        "status": "unsupported",
+        "evidence_chunks": [],
+        "notes": "None of the provided chunks define CID as content-addressed or hash-based. The answer asserts this without evidence."
+      },
+      {
+        "claim": "Authentication via wallet-derived key signing (wallet mnemonic -> signer address used to grant access).",
+        "status": "overstated",
+        "evidence_chunks": [
+          "p6-0035",
+          "p7-0051"
+        ],
+        "notes": "Docs show signing tokens and using UriSigner from mnemonic, but the answer frames it as 'wallet-derived key signing' and implies a 'data wallet' model. The evidence supports signing with mnemonic-derived keys, not the wallet framing."
+      },
+      {
+        "claim": "Erasure coding makes it so a malicious actor must control a significant portion of the cluster to reconstruct a file.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p4-0023"
+        ],
+        "notes": "Stated in p4-0023."
+      },
+      {
+        "claim": "SDK-integrated key management with delegated access grants is in development; client-side encryption is available manually today.",
+        "status": "supported",
+        "evidence_chunks": [
+          "p4-0023"
+        ],
+        "notes": "Status line explicitly says this."
+      },
+      {
+        "claim": "Key loss/recovery procedures are not addressed in the evidence.",
+        "status": "supported",
+        "evidence_chunks": [],
+        "notes": "Correct: no chunk discusses mnemonic loss/account loss or DEK loss consequences."
+      }
+    ],
+    "required_concepts_coverage": [
+      {
+        "concept": "Account creation via seed phrase / mnemonic (CLI command documented)",
+        "status": "partial",
+        "notes": "Mentions mnemonic seed usage, but does not describe CLI account creation; only SDK init is described."
+      },
+      {
+        "concept": "SDK initialization with seed phrase",
+        "status": "present",
+        "notes": "Explicitly shows DdcClient.create(user, TESTNET) with mnemonic and cites p6-0035."
+      },
+      {
+        "concept": "Bucket creation (public vs private)",
+        "status": "present",
+        "notes": "Shows createBucket(... isPublic: true) and discusses private bucket token usage (p6-0035)."
+      },
+      {
+        "concept": "File upload via client.store() returning a CID",
+        "status": "present",
+        "notes": "Step 4 and explanation cite p6-0035."
+      },
+      {
+        "concept": "CID is content-addressed (based on cryptographic hash)",
+        "status": "missing",
+        "notes": "Answer asserts this but provides no supporting evidence; none in chunks."
+      },
+      {
+        "concept": "Authentication via wallet-derived key signing",
+        "status": "partial",
+        "notes": "Shows token signing and signer usage indirectly, but does not clearly ground 'wallet-derived' framing; evidence supports mnemonic-derived signing (p7-0051, p6-0035)."
+      },
+      {
+        "concept": "Authorization via on-chain bucket permissions",
+        "status": "present",
+        "notes": "Explains pallet-based root access and bucket permissions with citations (p4-0023, p5-0049)."
+      },
+      {
+        "concept": "Recursive token-based access delegation",
+        "status": "present",
+        "notes": "Explained with token spec and trust chain citations (p7-0051, p13-0053)."
+      },
+      {
+        "concept": "Client-side encryption recommended for sensitive data",
+        "status": "present",
+        "notes": "Directly covered with p4-0023 and p2-0001."
+      },
+      {
+        "concept": "Key loss consequences (mnemonic loss = account loss, DEK loss = data inaccessible)",
+        "status": "missing",
+        "notes": "Answer explicitly says key loss procedures are not addressed; however rubric says docs cover key loss warnings. No evidence chunks provided here support key-loss consequences, so the answer cannot cite them."
+      }
+    ],
+    "forbidden_claims_found": [],
+    "outside_knowledge_detected": [
+      "CID described as content-addressed based on cryptographic hash (not in provided evidence chunks)."
+    ],
+    "failures": [
+      "Unsupported claim: CID is content-addressed / hash-based without evidence.",
+      "Missing required concept: key loss consequences (mnemonic/DEK loss) not addressed with evidence; answer claims docs don't cover it, but rubric expects it as documented."
+    ],
+    "missing_topics": [
+      "CLI account creation via mnemonic/seed phrase (only SDK init shown).",
+      "Explicit key-loss consequences (mnemonic loss/account loss; DEK loss/data inaccessible).",
+      "Explicitly grounded explanation of authentication as signing with mnemonic-derived keys (beyond token chain description)."
+    ],
+    "suggested_doc_improvements": [
+      {
+        "priority": "P0",
+        "description": "Add explicit documentation on key-loss consequences: losing mnemonic/private key implies loss of account access; losing DEK (if client-side encryption used) makes data unrecoverable.",
+        "reason": "Users ask 'what makes it secure' and 'wallet/key' questions; without explicit key-loss guidance, they may assume recoverability that does not exist."
+      },
+      {
+        "priority": "P1",
+        "description": "Add a short section defining what a CID is in DDC (including whether it is content-addressed and what cryptographic properties it has).",
+        "reason": "Prevents unsupported assumptions and clarifies integrity/addressing guarantees."
+      },
+      {
+        "priority": "P2",
+        "description": "Add a 'wallet' terminology mapping section (mnemonic/UriSigner/key types SR25519/ED25519) and how it relates to SDK/CLI usage.",
+        "reason": "Reduces confusion around 'data wallet' phrasing and avoids incorrect key-type assumptions."
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 12424,
+      "output_tokens": 2709
+    },
+    "ragas": {
+      "faithfulness": 1.0,
+      "answer_relevancy": null,
+      "ragas_available": true,
+      "llm_model": "gpt-4o",
+      "error": null
+    }
+  }
+}

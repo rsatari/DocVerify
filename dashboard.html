@@ -7,253 +7,409 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0a0e17; overflow: hidden; }
-  input:focus, button:focus { outline: none; }
-  ::selection { background: rgba(59,130,246,0.3); }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0e17;overflow:hidden;font-family:'Inter',-apple-system,sans-serif}
+  input:focus,button:focus{outline:none}
+  ::selection{background:rgba(59,130,246,0.3)}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  .tab-btn{padding:6px 14px;font-size:12px;font-weight:600;border:1px solid #1e293b;border-radius:6px;cursor:pointer;transition:all .15s;background:#111827;color:#64748b}
+  .tab-btn:hover,.tab-btn.active{border-color:#3b82f6;color:#3b82f6;background:rgba(59,130,246,0.08)}
+  .score-bar-track{height:6px;border-radius:3px;background:#1e293b;overflow:hidden}
+  .score-bar-fill{height:100%;border-radius:3px;transition:width .8s ease}
+  .card{background:#111827;border:1px solid #1e293b;border-radius:12px;padding:20px;margin-bottom:12px;animation:fadeIn .3s ease}
+  .claim-row{padding:6px 0;border-bottom:1px solid #1e293b20;font-size:12px;display:flex;gap:8px;align-items:flex-start}
+  .edit-card{background:#0f1a2e;border:1px solid #1e40af30;border-radius:10px;padding:14px;margin-bottom:8px;animation:slideIn .3s ease}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useCallback, useRef } = React;
+const {useState,useEffect,useCallback,useRef}=React;
+const API="http://localhost:8000";
+const C={bg:"#0a0e17",surface:"#111827",border:"#1e293b",borderActive:"#3b82f6",text:"#e2e8f0",textMuted:"#64748b",textDim:"#475569",accent:"#3b82f6",accentGlow:"rgba(59,130,246,0.15)",success:"#10b981",danger:"#ef4444",warning:"#f59e0b"};
 
-const API = "http://localhost:8000";
+function scoreColor(v){return v>=0.85?C.success:v>=0.7?C.warning:C.danger}
 
-const C = {
-  bg:"#0a0e17", surface:"#111827", border:"#1e293b", borderActive:"#3b82f6",
-  text:"#e2e8f0", textMuted:"#64748b", textDim:"#475569",
-  accent:"#3b82f6", accentGlow:"rgba(59,130,246,0.15)",
-  success:"#10b981", successGlow:"rgba(16,185,129,0.12)",
-  danger:"#ef4444", dangerGlow:"rgba(239,68,68,0.12)",
-  warning:"#f59e0b",
-};
-
-function StatusDot({ok}) {
-  const color = ok ? C.success : C.danger;
-  return React.createElement("span", {style:{display:"inline-flex",alignItems:"center",gap:6}},
-    React.createElement("span", {style:{width:8,height:8,borderRadius:"50%",background:color,boxShadow:`0 0 8px ${color}`,animation:"pulse 2s infinite"}}),
-    React.createElement("span", {style:{color,fontSize:13,fontWeight:500,textTransform:"uppercase",letterSpacing:1}}, ok?"connected":"offline")
-  );
+function ScoreBar({label,value,threshold}){
+  const pct=Math.min(value*100,100);const color=scoreColor(value);
+  return(<div style={{marginBottom:8}}>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+      <span style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5}}>{label}</span>
+      <span style={{fontSize:12,fontWeight:600,color,fontFamily:"'JetBrains Mono',monospace"}}>{value.toFixed(3)}</span>
+    </div>
+    <div className="score-bar-track"><div className="score-bar-fill" style={{width:`${pct}%`,background:color,boxShadow:`0 0 8px ${color}40`}}/></div>
+  </div>);
 }
 
-function Spinner({size=14}) {
-  return React.createElement("span", {style:{width:size,height:size,border:"2px solid #fff3",borderTopColor:"#fff",borderRadius:"50%",animation:"spin 0.8s linear infinite",display:"inline-block"}});
+function Spinner({size=14}){return <span style={{width:size,height:size,border:"2px solid #fff3",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .8s linear infinite",display:"inline-block"}}/>}
+
+// Parse structured JSON from agent response
+function parseEvaluation(content){
+  const match=content.match(/```json:evaluation\n([\s\S]*?)\n```/);
+  if(match){try{return JSON.parse(match[1])}catch{}}
+  return null;
 }
 
-function Bubble({msg}) {
-  const h = msg.type==="human";
-  return (
-    <div style={{display:"flex",justifyContent:h?"flex-end":"flex-start",marginBottom:12,animation:"fadeIn 0.3s ease"}}>
-      <div style={{
-        maxWidth:"85%",padding:"12px 16px",
-        borderRadius:h?"14px 14px 4px 14px":"14px 14px 14px 4px",
-        background:h?C.accent:C.surface,
-        border:h?"none":`1px solid ${C.border}`,
-        color:C.text,fontSize:14,lineHeight:1.65,
-        whiteSpace:"pre-wrap",wordBreak:"break-word",
-      }}>{msg.content}</div>
+function ResultsView({data}){
+  const [activeQ,setActiveQ]=useState(null);
+  const [tab,setTab]=useState("answers");
+  const qs=data.questions||{};
+  const qids=Object.keys(qs).sort();
+  const edits=data.improvements||[];
+
+  const activeData=activeQ?qs[activeQ]:null;
+  const passCount=qids.filter(q=>qs[q].passed).length;
+
+  return(<div style={{animation:"fadeIn .3s ease"}}>
+    {/* Summary bar */}
+    <div style={{display:"flex",gap:16,marginBottom:20,flexWrap:"wrap"}}>
+      <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 20px",flex:1,minWidth:120}}>
+        <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5}}>Questions</div>
+        <div style={{fontSize:24,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{passCount}/{qids.length} <span style={{fontSize:13,color:passCount===qids.length?C.success:C.warning}}>passed</span></div>
+      </div>
+      <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 20px",flex:1,minWidth:120}}>
+        <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5}}>Duration</div>
+        <div style={{fontSize:24,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{(data.elapsed||0).toFixed(1)}s</div>
+      </div>
+      <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 20px",flex:1,minWidth:120}}>
+        <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5}}>Doc Edits</div>
+        <div style={{fontSize:24,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{edits.length}</div>
+      </div>
+    </div>
+
+    {/* Question selector */}
+    <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+      {qids.map(qid=>{
+        const q=qs[qid];const color=q.passed?C.success:C.danger;
+        return <button key={qid} onClick={()=>setActiveQ(qid)} style={{
+          padding:"8px 16px",borderRadius:8,cursor:"pointer",border:activeQ===qid?`2px solid ${color}`:`1px solid ${C.border}`,
+          background:activeQ===qid?`${color}15`:C.surface,color:activeQ===qid?color:C.textMuted,
+          fontSize:13,fontWeight:600,fontFamily:"'JetBrains Mono',monospace",transition:"all .15s"
+        }}>
+          <span>{q.passed?"✅":"❌"} {qid}</span>
+          <span style={{marginLeft:8,fontSize:11,opacity:.7}}>{q.overall_score.toFixed(2)}</span>
+        </button>
+      })}
+      <button onClick={()=>{setActiveQ(null);setTab("edits")}} style={{
+        padding:"8px 16px",borderRadius:8,cursor:"pointer",
+        border:tab==="edits"&&!activeQ?`2px solid ${C.accent}`:`1px solid ${C.border}`,
+        background:tab==="edits"&&!activeQ?C.accentGlow:C.surface,color:tab==="edits"&&!activeQ?C.accent:C.textMuted,
+        fontSize:13,fontWeight:600,transition:"all .15s"
+      }}>📝 Edits ({edits.length})</button>
+    </div>
+
+    {/* Question detail */}
+    {activeData && (<div>
+      {/* Question text */}
+      <div className="card" style={{borderLeftColor:activeData.passed?C.success:C.danger,borderLeftWidth:3}}>
+        <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>
+          {activeQ} — Loop {activeData.loop}
+        </div>
+        <div style={{fontSize:14,color:C.text,lineHeight:1.5}}>{activeData.question_text}</div>
+      </div>
+
+      {/* Sub-tabs */}
+      <div style={{display:"flex",gap:6,marginBottom:16}}>
+        {["answers","scores","verification"].map(t=>(
+          <button key={t} className={`tab-btn ${tab===t?"active":""}`} onClick={()=>setTab(t)}>
+            {t==="answers"?"📄 Answer":t==="scores"?"📊 Scores":"🔍 Verification"}
+          </button>
+        ))}
+      </div>
+
+      {/* Answer tab */}
+      {tab==="answers"&&(<div className="card">
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}>
+          <span style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5}}>Generated Answer</span>
+          <span style={{fontSize:11,fontFamily:"'JetBrains Mono',monospace",color:C.accent,background:C.accentGlow,padding:"2px 8px",borderRadius:4}}>
+            {activeData.evidence_chunks_cited}/{activeData.evidence_chunks_provided} chunks cited
+          </span>
+        </div>
+        <div style={{fontSize:13,lineHeight:1.7,color:C.text,whiteSpace:"pre-wrap",maxHeight:400,overflow:"auto",padding:"12px 16px",background:C.bg,borderRadius:8,border:`1px solid ${C.border}`}}>
+          {activeData.answer_markdown||"No answer generated"}
+        </div>
+        {activeData.outside_knowledge_flags&&activeData.outside_knowledge_flags.length>0&&(
+          <div style={{marginTop:10,padding:"8px 12px",borderRadius:6,background:"rgba(245,158,11,0.1)",border:"1px solid rgba(245,158,11,0.2)",fontSize:12,color:C.warning}}>
+            ⚠ Outside knowledge detected: {activeData.outside_knowledge_flags.join(", ")}
+          </div>
+        )}
+      </div>)}
+
+      {/* Scores tab */}
+      {tab==="scores"&&(<div className="card">
+        <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
+          <div style={{width:72,height:72,borderRadius:"50%",border:`3px solid ${scoreColor(activeData.overall_score)}`,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+            <div style={{fontSize:22,fontWeight:800,color:scoreColor(activeData.overall_score),fontFamily:"'JetBrains Mono',monospace"}}>{activeData.overall_score.toFixed(2)}</div>
+          </div>
+          <div>
+            <div style={{fontSize:16,fontWeight:700,color:activeData.passed?C.success:C.danger}}>{activeData.passed?"PASS":"FAIL"}</div>
+            <div style={{fontSize:12,color:C.textMuted}}>Overall score (threshold: 0.85)</div>
+          </div>
+        </div>
+        {activeData.scores&&Object.entries(activeData.scores).map(([k,v])=>(
+          <ScoreBar key={k} label={k.replace(/_/g," ")} value={v||0} threshold={k==="grounded_correctness"?0.95:0.85}/>
+        ))}
+      </div>)}
+
+      {/* Verification tab */}
+      {tab==="verification"&&(<div className="card">
+        <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
+          {[
+            {label:"Claims Total",val:activeData.verification?.claims_total||0},
+            {label:"Supported",val:activeData.verification?.claims_supported||0,color:C.success},
+            {label:"Failed",val:activeData.verification?.claims_failed||0,color:C.danger},
+            {label:"Overrides",val:activeData.verification?.overrides||0,color:C.warning},
+          ].map(s=>(
+            <div key={s.label} style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 14px",minWidth:80}}>
+              <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5}}>{s.label}</div>
+              <div style={{fontSize:20,fontWeight:700,color:s.color||C.text,fontFamily:"'JetBrains Mono',monospace"}}>{s.val}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Verification layers */}
+        {activeData.verification?.grounding&&typeof activeData.verification.grounding==="object"&&Object.keys(activeData.verification.grounding).length>0&&(
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>Grounding (Deterministic)</div>
+            <div style={{fontSize:12,color:C.text,background:C.bg,padding:10,borderRadius:6,border:`1px solid ${C.border}`,fontFamily:"'JetBrains Mono',monospace"}}>
+              {JSON.stringify(activeData.verification.grounding,null,2).slice(0,500)}
+            </div>
+          </div>
+        )}
+        {activeData.verification?.nli&&typeof activeData.verification.nli==="object"&&Object.keys(activeData.verification.nli).length>0&&(
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>NLI (DeBERTa Entailment)</div>
+            <div style={{fontSize:12,color:C.text,background:C.bg,padding:10,borderRadius:6,border:`1px solid ${C.border}`,fontFamily:"'JetBrains Mono',monospace"}}>
+              {JSON.stringify(activeData.verification.nli,null,2).slice(0,500)}
+            </div>
+          </div>
+        )}
+        {activeData.verification?.ragas&&typeof activeData.verification.ragas==="object"&&Object.keys(activeData.verification.ragas).length>0&&(
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>RAGAS Faithfulness</div>
+            <div style={{fontSize:12,color:C.text,background:C.bg,padding:10,borderRadius:6,border:`1px solid ${C.border}`,fontFamily:"'JetBrains Mono',monospace"}}>
+              {JSON.stringify(activeData.verification.ragas,null,2).slice(0,500)}
+            </div>
+          </div>
+        )}
+
+        {/* Claim details */}
+        {activeData.verification?.claim_details&&activeData.verification.claim_details.length>0&&(
+          <div>
+            <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Claim Details</div>
+            {activeData.verification.claim_details.map((c,i)=>(
+              <div key={i} className="claim-row">
+                <span style={{color:c.status==="supported"?C.success:c.status==="overridden"?C.warning:C.danger,flexShrink:0}}>
+                  {c.status==="supported"?"✅":c.status==="overridden"?"🔄":"❌"}
+                </span>
+                <span style={{color:C.text,flex:1}}>{(c.claim||c.text||"").slice(0,120)}</span>
+                {c.grounding_score!==undefined&&<span style={{color:C.textDim,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>G:{c.grounding_score?.toFixed(2)}</span>}
+                {c.nli_score!==undefined&&<span style={{color:C.textDim,fontFamily:"'JetBrains Mono',monospace",flexShrink:0}}>N:{c.nli_score?.toFixed(2)}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>)}
+    </div>)}
+
+    {/* Edits view */}
+    {(tab==="edits"&&!activeQ)&&(<div>
+      <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:12}}>Documentation Improvements ({edits.length})</div>
+      {edits.length===0&&<div style={{color:C.textMuted,fontSize:13}}>No edits proposed in this run.</div>}
+      {edits.map((edit,i)=>(
+        <div key={i} className="edit-card">
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+            <span style={{fontSize:12,fontWeight:600,color:C.accent}}>{edit.target_file||"unknown file"}</span>
+            <div style={{display:"flex",gap:6}}>
+              {edit.question_id&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:C.accentGlow,color:C.accent}}>{edit.question_id}</span>}
+              <span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(245,158,11,0.1)",color:C.warning}}>{edit.edit_type||"addition"}</span>
+            </div>
+          </div>
+          <div style={{fontSize:12,color:C.warning,marginBottom:6}}>Gap: {edit.gap_description||"—"}</div>
+          {edit.edit_content&&(
+            <div style={{fontSize:12,color:C.text,background:"#0a0e17",padding:10,borderRadius:6,border:`1px solid ${C.border}`,whiteSpace:"pre-wrap",maxHeight:200,overflow:"auto",fontFamily:"'JetBrains Mono',monospace"}}>
+              {edit.edit_content}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>)}
+  </div>);
+}
+
+function Bubble({msg,onResultsParsed}){
+  const h=msg.type==="human";
+  const evalData=!h?parseEvaluation(msg.content):null;
+
+  React.useEffect(()=>{
+    if(evalData&&onResultsParsed)onResultsParsed(evalData);
+  },[evalData]);
+
+  if(evalData) return null; // Results rendered by ResultsView instead
+
+  return(
+    <div style={{display:"flex",justifyContent:h?"flex-end":"flex-start",marginBottom:12,animation:"fadeIn .3s ease"}}>
+      <div style={{maxWidth:"85%",padding:"12px 16px",borderRadius:h?"14px 14px 4px 14px":"14px 14px 14px 4px",
+        background:h?C.accent:C.surface,border:h?"none":`1px solid ${C.border}`,
+        color:C.text,fontSize:14,lineHeight:1.65,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
+        {msg.content}
+      </div>
     </div>
   );
 }
 
-function App() {
-  const [connected, setConnected] = useState(false);
-  const [threads, setThreads] = useState([]);
-  const [activeThread, setActiveThread] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState(null);
-  const [assistantId, setAssistantId] = useState(null);
-  const bottom = useRef(null);
+function App(){
+  const [connected,setConnected]=useState(false);
+  const [threads,setThreads]=useState([]);
+  const [activeThread,setActiveThread]=useState(null);
+  const [messages,setMessages]=useState([]);
+  const [input,setInput]=useState("");
+  const [running,setRunning]=useState(false);
+  const [error,setError]=useState(null);
+  const [assistantId,setAssistantId]=useState(null);
+  const [evalResults,setEvalResults]=useState(null);
+  const bottom=useRef(null);
 
-  useEffect(() => { bottom.current?.scrollIntoView({behavior:"smooth"}); }, [messages]);
+  useEffect(()=>{bottom.current?.scrollIntoView({behavior:"smooth"})},[messages,evalResults]);
 
-  // Init
-  useEffect(() => {
-    (async () => {
-      try {
-        const r = await fetch(`${API}/assistants/search`, {
-          method:"POST", headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({graph_id:"agent"}),
-        });
-        if (!r.ok) throw new Error();
-        const data = await r.json();
-        if (data.length > 0) setAssistantId(data[0].assistant_id);
-        setConnected(true);
-      } catch { setConnected(false); setError("Cannot connect to Aegra at " + API); }
-    })();
-  }, []);
+  useEffect(()=>{(async()=>{try{
+    const r=await fetch(`${API}/assistants/search`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({graph_id:"agent"})});
+    if(!r.ok)throw new Error();const data=await r.json();
+    if(data.length>0)setAssistantId(data[0].assistant_id);setConnected(true);setError(null);
+  }catch{setConnected(false);setError("Cannot connect to Aegra at "+API)}})()},[]);
 
-  // Load threads
-  const loadThreads = useCallback(async () => {
-    try {
-      const r = await fetch(`${API}/threads/search`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({limit:20}),
-      });
-      if (r.ok) setThreads(await r.json());
-    } catch {}
-  }, []);
-  useEffect(() => { if (connected) loadThreads(); }, [connected]);
+  const loadThreads=useCallback(async()=>{try{
+    const r=await fetch(`${API}/threads/search`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({limit:20})});
+    if(r.ok)setThreads(await r.json());
+  }catch{}},[]);
+  useEffect(()=>{if(connected)loadThreads()},[connected]);
 
-  // Load messages
-  useEffect(() => {
-    if (!activeThread) return;
-    (async () => {
-      try {
-        const r = await fetch(`${API}/threads/${activeThread}/state`);
-        if (r.ok) { const s = await r.json(); setMessages(s.values?.messages || []); }
-      } catch {}
-    })();
-  }, [activeThread]);
-
-  // New thread
-  const newThread = async () => {
-    try {
-      const r = await fetch(`${API}/threads`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
-      const t = await r.json();
-      setActiveThread(t.thread_id);
-      setMessages([]);
-      await loadThreads();
-    } catch {}
-  };
-
-  // Send
-  const send = async () => {
-    if (!input.trim() || !assistantId || running) return;
-    let tid = activeThread;
-    if (!tid) {
-      try {
-        const r = await fetch(`${API}/threads`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
-        const t = await r.json(); tid = t.thread_id; setActiveThread(tid);
-      } catch { setError("Failed to create thread"); return; }
+  useEffect(()=>{if(!activeThread)return;(async()=>{try{
+    const r=await fetch(`${API}/threads/${activeThread}/state`);
+    if(r.ok){const s=await r.json();const msgs=s.values?.messages||[];setMessages(msgs);
+      // Check if any message has eval results
+      for(const m of msgs){if(m.type!=="human"){const d=parseEvaluation(m.content);if(d){setEvalResults(d);break}}}
     }
-    const msg = input.trim();
-    setInput(""); setRunning(true); setError(null);
-    setMessages(prev => [...prev, {type:"human",content:msg}]);
-    try {
-      const r = await fetch(`${API}/threads/${tid}/runs/wait`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({assistant_id:assistantId, input:{messages:[{type:"human",content:msg}]}}),
-      });
-      if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.detail||e.message||`HTTP ${r.status}`); }
-      const result = await r.json();
-      setMessages(result.values?.messages || result.messages || []);
+  }catch{}})()},[activeThread]);
+
+  const send=async()=>{
+    if(!input.trim()||!assistantId||running)return;
+    let tid=activeThread;
+    if(!tid){try{const r=await fetch(`${API}/threads`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
+      const t=await r.json();tid=t.thread_id;setActiveThread(tid)}catch{setError("Failed to create thread");return}}
+    const msg=input.trim();setInput("");setRunning(true);setError(null);setEvalResults(null);
+    setMessages(prev=>[...prev,{type:"human",content:msg}]);
+    try{
+      const r=await fetch(`${API}/threads/${tid}/runs/wait`,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({assistant_id:assistantId,input:{messages:[{type:"human",content:msg}]}})});
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||e.message||`HTTP ${r.status}`)}
+      const result=await r.json();const allMsgs=result.values?.messages||result.messages||[];setMessages(allMsgs);
+      // Parse eval results from response
+      for(const m of allMsgs){if(m.type!=="human"){const d=parseEvaluation(m.content);if(d){setEvalResults(d);break}}}
       await loadThreads();
-    } catch (e) {
-      setError(e.message);
-      setMessages(prev => [...prev, {type:"ai",content:`Error: ${e.message}`}]);
-    }
+    }catch(e){setError(e.message);setMessages(prev=>[...prev,{type:"ai",content:`Error: ${e.message}`}])}
     setRunning(false);
   };
 
-  return (
+  const ok=connected;const dot=ok?C.success:C.danger;
+
+  return(
     <div style={{display:"flex",height:"100vh",background:C.bg,color:C.text,fontFamily:"'Inter',-apple-system,sans-serif"}}>
       {/* Sidebar */}
-      <div style={{width:240,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",flexShrink:0}}>
-        <div style={{padding:"16px 16px 12px",borderBottom:`1px solid ${C.border}`}}>
+      <div style={{width:220,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",flexShrink:0}}>
+        <div style={{padding:"16px 14px 12px",borderBottom:`1px solid ${C.border}`}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${C.accent},#8b5cf6)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:700,color:"#fff",boxShadow:`0 0 16px ${C.accent}30`}}>D</div>
-            <div>
-              <div style={{fontSize:15,fontWeight:700,letterSpacing:-0.3}}>DocVerify</div>
-              <div style={{fontSize:10,color:C.textDim,letterSpacing:0.8,marginTop:1}}>AEGRA AGENT</div>
-            </div>
+            <div style={{width:30,height:30,borderRadius:8,background:`linear-gradient(135deg,${C.accent},#8b5cf6)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:700,color:"#fff",boxShadow:`0 0 14px ${C.accent}30`}}>D</div>
+            <div><div style={{fontSize:14,fontWeight:700}}>DocVerify</div><div style={{fontSize:9,color:C.textDim,letterSpacing:.8}}>AEGRA AGENT</div></div>
           </div>
-          <div style={{marginTop:12}}><StatusDot ok={connected}/></div>
+          <div style={{marginTop:10,display:"flex",alignItems:"center",gap:6}}>
+            <span style={{width:7,height:7,borderRadius:"50%",background:dot,boxShadow:`0 0 6px ${dot}`,animation:"pulse 2s infinite"}}/>
+            <span style={{color:dot,fontSize:11,fontWeight:500,textTransform:"uppercase",letterSpacing:1}}>{ok?"connected":"offline"}</span>
+          </div>
         </div>
-
-        <div style={{padding:"12px 12px 8px"}}>
-          <button onClick={newThread} style={{width:"100%",padding:"8px 12px",fontSize:13,fontWeight:600,color:C.accent,background:C.accentGlow,border:`1px solid ${C.accent}30`,borderRadius:8,cursor:"pointer"}}>+ New Thread</button>
+        <div style={{padding:"10px 10px 6px"}}>
+          <button onClick={async()=>{try{const r=await fetch(`${API}/threads`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
+            const t=await r.json();setActiveThread(t.thread_id);setMessages([]);setEvalResults(null);await loadThreads()}catch{}}}
+            style={{width:"100%",padding:"7px 10px",fontSize:12,fontWeight:600,color:C.accent,background:C.accentGlow,border:`1px solid ${C.accent}30`,borderRadius:7,cursor:"pointer"}}>+ New Thread</button>
         </div>
-
         <div style={{flex:1,overflow:"auto",padding:"4px 0"}}>
-          {threads.map(t => (
-            <button key={t.thread_id} onClick={() => setActiveThread(t.thread_id)}
-              style={{width:"100%",padding:"10px 14px",background:activeThread===t.thread_id?C.accentGlow:"transparent",border:"none",borderLeft:activeThread===t.thread_id?`2px solid ${C.accent}`:"2px solid transparent",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:13,fontWeight:activeThread===t.thread_id?600:400,color:activeThread===t.thread_id?C.text:C.textMuted,fontFamily:"'JetBrains Mono',monospace"}}>{t.thread_id.slice(0,8)}</div>
-              <div style={{fontSize:11,color:C.textDim,marginTop:2}}>{t.updated_at ? new Date(t.updated_at).toLocaleTimeString() : ""}</div>
+          {threads.map(t=>(
+            <button key={t.thread_id} onClick={()=>{setActiveThread(t.thread_id);setEvalResults(null)}}
+              style={{width:"100%",padding:"8px 12px",background:activeThread===t.thread_id?C.accentGlow:"transparent",border:"none",
+                borderLeft:activeThread===t.thread_id?`2px solid ${C.accent}`:"2px solid transparent",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:activeThread===t.thread_id?600:400,color:activeThread===t.thread_id?C.text:C.textMuted,fontFamily:"'JetBrains Mono',monospace"}}>{t.thread_id.slice(0,8)}</div>
+              <div style={{fontSize:10,color:C.textDim,marginTop:1}}>{t.updated_at?new Date(t.updated_at).toLocaleTimeString():""}</div>
             </button>
           ))}
-          {threads.length===0 && <div style={{padding:"20px 16px",fontSize:12,color:C.textDim,textAlign:"center"}}>No threads yet</div>}
         </div>
-
-        <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,fontSize:11,color:C.textDim}}>
-          {assistantId && <div style={{fontFamily:"'JetBrains Mono',monospace"}}>agent: {assistantId.slice(0,8)}</div>}
+        <div style={{padding:"10px 14px",borderTop:`1px solid ${C.border}`,fontSize:10,color:C.textDim}}>
+          {assistantId&&<div style={{fontFamily:"'JetBrains Mono',monospace"}}>agent: {assistantId.slice(0,8)}</div>}
         </div>
       </div>
 
       {/* Main */}
       <div style={{flex:1,display:"flex",flexDirection:"column"}}>
-        <div style={{padding:"12px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{padding:"10px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div>
-            <span style={{fontSize:14,fontWeight:600}}>{activeThread ? `Thread ${activeThread.slice(0,8)}` : "DocVerify Agent"}</span>
-            {running && <span style={{marginLeft:12,fontSize:12,color:C.warning}}><Spinner size={10}/> Processing...</span>}
+            <span style={{fontSize:13,fontWeight:600}}>{activeThread?`Thread ${activeThread.slice(0,8)}`:"DocVerify Agent"}</span>
+            {running&&<span style={{marginLeft:10,fontSize:11,color:C.warning}}><Spinner size={10}/> Processing...</span>}
           </div>
-          <div style={{display:"flex",gap:8}}>
-            {[{l:"▶ Evaluate",c:"evaluate"},{l:"📊 Status",c:"status"}].map(q => (
-              <button key={q.c} onClick={() => setInput(q.c)}
-                style={{padding:"6px 14px",fontSize:12,fontWeight:500,color:C.textMuted,background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer"}}
-                onMouseEnter={e=>{e.target.style.borderColor=C.accent;e.target.style.color=C.accent}}
-                onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.textMuted}}>
-                {q.l}
-              </button>
+          <div style={{display:"flex",gap:6}}>
+            {[{l:"▶ Evaluate",c:"evaluate"},{l:"📊 Status",c:"status"}].map(q=>(
+              <button key={q.c} onClick={()=>setInput(q.c)} className="tab-btn">{q.l}</button>
             ))}
           </div>
         </div>
 
-        <div style={{flex:1,overflow:"auto",padding:"24px 24px 12px"}}>
-          {error && <div style={{background:C.dangerGlow,border:`1px solid ${C.danger}30`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:12,color:C.danger,animation:"fadeIn 0.3s ease"}}>{error}</div>}
+        <div style={{flex:1,overflow:"auto",padding:"20px 20px 12px"}}>
+          {error&&<div style={{background:"rgba(239,68,68,0.08)",border:`1px solid ${C.danger}30`,borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:12,color:C.danger}}>{error}</div>}
 
-          {messages.length===0 && !error && (
-            <div style={{textAlign:"center",paddingTop:"15vh",animation:"fadeIn 0.5s ease"}}>
-              <div style={{width:64,height:64,borderRadius:16,margin:"0 auto 20px",background:`linear-gradient(135deg,${C.accent}20,#8b5cf620)`,border:`1px solid ${C.accent}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>◇</div>
-              <div style={{fontSize:16,fontWeight:600,marginBottom:8}}>DocVerify Agent</div>
-              <div style={{fontSize:13,color:C.textMuted,maxWidth:400,margin:"0 auto",lineHeight:1.6}}>
-                Ask questions about your documentation, or type <strong style={{color:C.accent}}>evaluate</strong> to run the full verification pipeline.
+          {messages.length===0&&!error&&!evalResults&&(
+            <div style={{textAlign:"center",paddingTop:"12vh",animation:"fadeIn .5s ease"}}>
+              <div style={{width:56,height:56,borderRadius:14,margin:"0 auto 16px",background:`linear-gradient(135deg,${C.accent}20,#8b5cf620)`,border:`1px solid ${C.accent}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>◇</div>
+              <div style={{fontSize:15,fontWeight:600,marginBottom:6}}>DocVerify Agent</div>
+              <div style={{fontSize:12,color:C.textMuted,maxWidth:380,margin:"0 auto",lineHeight:1.6}}>
+                Type <strong style={{color:C.accent}}>evaluate</strong> to run the full pipeline, or ask a question about your documentation.
               </div>
-              <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:20,flexWrap:"wrap"}}>
-                {["How does authentication work?","evaluate","status"].map(ex => (
-                  <button key={ex} onClick={() => setInput(ex)}
-                    style={{padding:"8px 14px",fontSize:12,color:C.textMuted,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,cursor:"pointer"}}
-                    onMouseEnter={e=>{e.target.style.borderColor=C.accent}}
-                    onMouseLeave={e=>{e.target.style.borderColor=C.border}}>
-                    {ex}
-                  </button>
+              <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:16,flexWrap:"wrap"}}>
+                {["How does authentication work?","evaluate","status"].map(ex=>(
+                  <button key={ex} onClick={()=>setInput(ex)} className="tab-btn">{ex}</button>
                 ))}
               </div>
             </div>
           )}
 
-          {messages.map((msg,i) => <Bubble key={i} msg={msg}/>)}
+          {/* Chat messages (non-eval) */}
+          {messages.filter(m=>{if(m.type==="human")return true;return!parseEvaluation(m.content)}).map((msg,i)=>(
+            <Bubble key={i} msg={msg}/>
+          ))}
+
+          {/* Structured results view */}
+          {evalResults&&<ResultsView data={evalResults}/>}
+
           <div ref={bottom}/>
         </div>
 
-        <div style={{padding:"12px 24px 20px",borderTop:`1px solid ${C.border}`}}>
-          <div style={{display:"flex",gap:10,maxWidth:720}}>
+        <div style={{padding:"10px 20px 16px",borderTop:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",gap:8,maxWidth:700}}>
             <input value={input} onChange={e=>setInput(e.target.value)}
               onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey)send()}}
               placeholder="Ask a question or type 'evaluate'..."
               disabled={running}
-              style={{flex:1,padding:"12px 16px",fontSize:14,color:C.text,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,fontFamily:"inherit",opacity:running?0.5:1}}
-              onFocus={e=>{e.target.style.borderColor=C.borderActive}}
-              onBlur={e=>{e.target.style.borderColor=C.border}}/>
+              style={{flex:1,padding:"10px 14px",fontSize:13,color:C.text,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,fontFamily:"inherit",opacity:running?.5:1}}
+              onFocus={e=>{e.target.style.borderColor=C.borderActive}} onBlur={e=>{e.target.style.borderColor=C.border}}/>
             <button onClick={send} disabled={running||!input.trim()}
-              style={{padding:"12px 20px",fontSize:14,fontWeight:600,color:"#fff",
+              style={{padding:"10px 18px",fontSize:13,fontWeight:600,color:"#fff",
                 background:running||!input.trim()?C.textDim:`linear-gradient(135deg,${C.accent},#6366f1)`,
-                border:"none",borderRadius:12,cursor:running||!input.trim()?"not-allowed":"pointer",
-                boxShadow:running||!input.trim()?"none":`0 0 16px ${C.accent}25`,
-                display:"flex",alignItems:"center",gap:8}}>
-              {running ? <Spinner/> : "Send"}
+                border:"none",borderRadius:10,cursor:running||!input.trim()?"not-allowed":"pointer",
+                boxShadow:running||!input.trim()?"none":`0 0 14px ${C.accent}25`,display:"flex",alignItems:"center",gap:6}}>
+              {running?<Spinner/>:"Send"}
             </button>
           </div>
         </div>
@@ -262,7 +418,7 @@ function App() {
   );
 }
 
-ReactDOM.render(React.createElement(App), document.getElementById("root"));
+ReactDOM.render(React.createElement(App),document.getElementById("root"));
 </script>
 </body>
 </html>
