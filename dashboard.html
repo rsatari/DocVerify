@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocVerify — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0e17; overflow: hidden; }
+  input:focus, button:focus { outline: none; }
+  ::selection { background: rgba(59,130,246,0.3); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+const API = "http://localhost:8000";
+
+const C = {
+  bg:"#0a0e17", surface:"#111827", border:"#1e293b", borderActive:"#3b82f6",
+  text:"#e2e8f0", textMuted:"#64748b", textDim:"#475569",
+  accent:"#3b82f6", accentGlow:"rgba(59,130,246,0.15)",
+  success:"#10b981", successGlow:"rgba(16,185,129,0.12)",
+  danger:"#ef4444", dangerGlow:"rgba(239,68,68,0.12)",
+  warning:"#f59e0b",
+};
+
+function StatusDot({ok}) {
+  const color = ok ? C.success : C.danger;
+  return React.createElement("span", {style:{display:"inline-flex",alignItems:"center",gap:6}},
+    React.createElement("span", {style:{width:8,height:8,borderRadius:"50%",background:color,boxShadow:`0 0 8px ${color}`,animation:"pulse 2s infinite"}}),
+    React.createElement("span", {style:{color,fontSize:13,fontWeight:500,textTransform:"uppercase",letterSpacing:1}}, ok?"connected":"offline")
+  );
+}
+
+function Spinner({size=14}) {
+  return React.createElement("span", {style:{width:size,height:size,border:"2px solid #fff3",borderTopColor:"#fff",borderRadius:"50%",animation:"spin 0.8s linear infinite",display:"inline-block"}});
+}
+
+function Bubble({msg}) {
+  const h = msg.type==="human";
+  return (
+    <div style={{display:"flex",justifyContent:h?"flex-end":"flex-start",marginBottom:12,animation:"fadeIn 0.3s ease"}}>
+      <div style={{
+        maxWidth:"85%",padding:"12px 16px",
+        borderRadius:h?"14px 14px 4px 14px":"14px 14px 14px 4px",
+        background:h?C.accent:C.surface,
+        border:h?"none":`1px solid ${C.border}`,
+        color:C.text,fontSize:14,lineHeight:1.65,
+        whiteSpace:"pre-wrap",wordBreak:"break-word",
+      }}>{msg.content}</div>
+    </div>
+  );
+}
+
+function App() {
+  const [connected, setConnected] = useState(false);
+  const [threads, setThreads] = useState([]);
+  const [activeThread, setActiveThread] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState(null);
+  const [assistantId, setAssistantId] = useState(null);
+  const bottom = useRef(null);
+
+  useEffect(() => { bottom.current?.scrollIntoView({behavior:"smooth"}); }, [messages]);
+
+  // Init
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${API}/assistants/search`, {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({graph_id:"agent"}),
+        });
+        if (!r.ok) throw new Error();
+        const data = await r.json();
+        if (data.length > 0) setAssistantId(data[0].assistant_id);
+        setConnected(true);
+      } catch { setConnected(false); setError("Cannot connect to Aegra at " + API); }
+    })();
+  }, []);
+
+  // Load threads
+  const loadThreads = useCallback(async () => {
+    try {
+      const r = await fetch(`${API}/threads/search`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({limit:20}),
+      });
+      if (r.ok) setThreads(await r.json());
+    } catch {}
+  }, []);
+  useEffect(() => { if (connected) loadThreads(); }, [connected]);
+
+  // Load messages
+  useEffect(() => {
+    if (!activeThread) return;
+    (async () => {
+      try {
+        const r = await fetch(`${API}/threads/${activeThread}/state`);
+        if (r.ok) { const s = await r.json(); setMessages(s.values?.messages || []); }
+      } catch {}
+    })();
+  }, [activeThread]);
+
+  // New thread
+  const newThread = async () => {
+    try {
+      const r = await fetch(`${API}/threads`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
+      const t = await r.json();
+      setActiveThread(t.thread_id);
+      setMessages([]);
+      await loadThreads();
+    } catch {}
+  };
+
+  // Send
+  const send = async () => {
+    if (!input.trim() || !assistantId || running) return;
+    let tid = activeThread;
+    if (!tid) {
+      try {
+        const r = await fetch(`${API}/threads`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
+        const t = await r.json(); tid = t.thread_id; setActiveThread(tid);
+      } catch { setError("Failed to create thread"); return; }
+    }
+    const msg = input.trim();
+    setInput(""); setRunning(true); setError(null);
+    setMessages(prev => [...prev, {type:"human",content:msg}]);
+    try {
+      const r = await fetch(`${API}/threads/${tid}/runs/wait`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({assistant_id:assistantId, input:{messages:[{type:"human",content:msg}]}}),
+      });
+      if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.detail||e.message||`HTTP ${r.status}`); }
+      const result = await r.json();
+      setMessages(result.values?.messages || result.messages || []);
+      await loadThreads();
+    } catch (e) {
+      setError(e.message);
+      setMessages(prev => [...prev, {type:"ai",content:`Error: ${e.message}`}]);
+    }
+    setRunning(false);
+  };
+
+  return (
+    <div style={{display:"flex",height:"100vh",background:C.bg,color:C.text,fontFamily:"'Inter',-apple-system,sans-serif"}}>
+      {/* Sidebar */}
+      <div style={{width:240,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",flexShrink:0}}>
+        <div style={{padding:"16px 16px 12px",borderBottom:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${C.accent},#8b5cf6)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:700,color:"#fff",boxShadow:`0 0 16px ${C.accent}30`}}>D</div>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,letterSpacing:-0.3}}>DocVerify</div>
+              <div style={{fontSize:10,color:C.textDim,letterSpacing:0.8,marginTop:1}}>AEGRA AGENT</div>
+            </div>
+          </div>
+          <div style={{marginTop:12}}><StatusDot ok={connected}/></div>
+        </div>
+
+        <div style={{padding:"12px 12px 8px"}}>
+          <button onClick={newThread} style={{width:"100%",padding:"8px 12px",fontSize:13,fontWeight:600,color:C.accent,background:C.accentGlow,border:`1px solid ${C.accent}30`,borderRadius:8,cursor:"pointer"}}>+ New Thread</button>
+        </div>
+
+        <div style={{flex:1,overflow:"auto",padding:"4px 0"}}>
+          {threads.map(t => (
+            <button key={t.thread_id} onClick={() => setActiveThread(t.thread_id)}
+              style={{width:"100%",padding:"10px 14px",background:activeThread===t.thread_id?C.accentGlow:"transparent",border:"none",borderLeft:activeThread===t.thread_id?`2px solid ${C.accent}`:"2px solid transparent",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:13,fontWeight:activeThread===t.thread_id?600:400,color:activeThread===t.thread_id?C.text:C.textMuted,fontFamily:"'JetBrains Mono',monospace"}}>{t.thread_id.slice(0,8)}</div>
+              <div style={{fontSize:11,color:C.textDim,marginTop:2}}>{t.updated_at ? new Date(t.updated_at).toLocaleTimeString() : ""}</div>
+            </button>
+          ))}
+          {threads.length===0 && <div style={{padding:"20px 16px",fontSize:12,color:C.textDim,textAlign:"center"}}>No threads yet</div>}
+        </div>
+
+        <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,fontSize:11,color:C.textDim}}>
+          {assistantId && <div style={{fontFamily:"'JetBrains Mono',monospace"}}>agent: {assistantId.slice(0,8)}</div>}
+        </div>
+      </div>
+
+      {/* Main */}
+      <div style={{flex:1,display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"12px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <span style={{fontSize:14,fontWeight:600}}>{activeThread ? `Thread ${activeThread.slice(0,8)}` : "DocVerify Agent"}</span>
+            {running && <span style={{marginLeft:12,fontSize:12,color:C.warning}}><Spinner size={10}/> Processing...</span>}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            {[{l:"▶ Evaluate",c:"evaluate"},{l:"📊 Status",c:"status"}].map(q => (
+              <button key={q.c} onClick={() => setInput(q.c)}
+                style={{padding:"6px 14px",fontSize:12,fontWeight:500,color:C.textMuted,background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer"}}
+                onMouseEnter={e=>{e.target.style.borderColor=C.accent;e.target.style.color=C.accent}}
+                onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.textMuted}}>
+                {q.l}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{flex:1,overflow:"auto",padding:"24px 24px 12px"}}>
+          {error && <div style={{background:C.dangerGlow,border:`1px solid ${C.danger}30`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:12,color:C.danger,animation:"fadeIn 0.3s ease"}}>{error}</div>}
+
+          {messages.length===0 && !error && (
+            <div style={{textAlign:"center",paddingTop:"15vh",animation:"fadeIn 0.5s ease"}}>
+              <div style={{width:64,height:64,borderRadius:16,margin:"0 auto 20px",background:`linear-gradient(135deg,${C.accent}20,#8b5cf620)`,border:`1px solid ${C.accent}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>◇</div>
+              <div style={{fontSize:16,fontWeight:600,marginBottom:8}}>DocVerify Agent</div>
+              <div style={{fontSize:13,color:C.textMuted,maxWidth:400,margin:"0 auto",lineHeight:1.6}}>
+                Ask questions about your documentation, or type <strong style={{color:C.accent}}>evaluate</strong> to run the full verification pipeline.
+              </div>
+              <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:20,flexWrap:"wrap"}}>
+                {["How does authentication work?","evaluate","status"].map(ex => (
+                  <button key={ex} onClick={() => setInput(ex)}
+                    style={{padding:"8px 14px",fontSize:12,color:C.textMuted,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,cursor:"pointer"}}
+                    onMouseEnter={e=>{e.target.style.borderColor=C.accent}}
+                    onMouseLeave={e=>{e.target.style.borderColor=C.border}}>
+                    {ex}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {messages.map((msg,i) => <Bubble key={i} msg={msg}/>)}
+          <div ref={bottom}/>
+        </div>
+
+        <div style={{padding:"12px 24px 20px",borderTop:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",gap:10,maxWidth:720}}>
+            <input value={input} onChange={e=>setInput(e.target.value)}
+              onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey)send()}}
+              placeholder="Ask a question or type 'evaluate'..."
+              disabled={running}
+              style={{flex:1,padding:"12px 16px",fontSize:14,color:C.text,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,fontFamily:"inherit",opacity:running?0.5:1}}
+              onFocus={e=>{e.target.style.borderColor=C.borderActive}}
+              onBlur={e=>{e.target.style.borderColor=C.border}}/>
+            <button onClick={send} disabled={running||!input.trim()}
+              style={{padding:"12px 20px",fontSize:14,fontWeight:600,color:"#fff",
+                background:running||!input.trim()?C.textDim:`linear-gradient(135deg,${C.accent},#6366f1)`,
+                border:"none",borderRadius:12,cursor:running||!input.trim()?"not-allowed":"pointer",
+                boxShadow:running||!input.trim()?"none":`0 0 16px ${C.accent}25`,
+                display:"flex",alignItems:"center",gap:8}}>
+              {running ? <Spinner/> : "Send"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
+</script>
+</body>
+</html>
